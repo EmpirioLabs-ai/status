@@ -383,7 +383,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     margin-bottom: 32px;
   }
   .brand { display: flex; align-items: center; gap: 12px; }
-  .brand img { height: 32px; width: auto; display: block; }
+  .brand img { height: 44px; width: auto; display: block; }
   .updates {
     display: inline-flex; align-items: center; gap: 8px;
     background: #0a7cff; color: #fff;
@@ -559,6 +559,82 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
   .empty { color: #6b7790; font-size: 0.9rem; padding: 4px 0; }
 
+  /* custom right-click context menu */
+  .ctx {
+    position: fixed;
+    z-index: 50;
+    min-width: 240px;
+    background: #060f22;
+    border: 1px solid #14233f;
+    border-radius: 10px;
+    padding: 6px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+    font-size: 0.875rem;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+    transition: opacity 90ms ease, transform 90ms ease;
+    pointer-events: none;
+  }
+  .ctx.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .ctx button, .ctx a {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%;
+    background: transparent;
+    color: #e6edf6;
+    border: 0;
+    padding: 9px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    text-decoration: none;
+    transition: background 90ms ease;
+  }
+  .ctx button:hover, .ctx a:hover {
+    background: rgba(10,124,255,0.12);
+    color: #fff;
+  }
+  .ctx .ic {
+    width: 16px; height: 16px; flex: 0 0 16px;
+    color: #6b7790;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ctx button:hover .ic, .ctx a:hover .ic { color: #4a9bff; }
+  .ctx .sep {
+    height: 1px;
+    background: #14233f;
+    margin: 4px 6px;
+  }
+  .ctx .kbd {
+    margin-left: auto;
+    color: #5a6680;
+    font-size: 0.72rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .ctx-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: #060f22;
+    color: #e6edf6;
+    border: 1px solid #14233f;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease, transform 160ms ease;
+    z-index: 60;
+  }
+  .ctx-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
   @media (max-width: 600px) {
     .page { padding: 32px 16px 56px; }
     .bars { height: 28px; }
@@ -615,6 +691,36 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     <span>© EmpirioLabs AI</span>
   </footer>
 </div>
+
+<div class="ctx" id="ctx" role="menu" aria-label="Status page actions">
+  <button data-act="copy-link" type="button" role="menuitem">
+    <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+    Copy link
+  </button>
+  <button data-act="copy-md" type="button" role="menuitem">
+    <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+    Copy as Markdown
+  </button>
+  <button data-act="copy-status" type="button" role="menuitem">
+    <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+    Copy status as JSON
+  </button>
+  <div class="sep"></div>
+  <button data-act="rss" type="button" role="menuitem">
+    <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 17.82a2.18 2.18 0 11-4.36 0 2.18 2.18 0 014.36 0zM2 9.27v3.21a8.52 8.52 0 018.52 8.52h3.21A11.73 11.73 0 002 9.27zM2 2.79V6a15 15 0 0115 15h3.21A18.21 18.21 0 002 2.79z"/></svg></span>
+    Subscribe via RSS
+  </button>
+  <button data-act="incidents" type="button" role="menuitem">
+    <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+    View past incidents
+  </button>
+  <div class="sep"></div>
+  <button data-act="view-source" type="button" role="menuitem">
+    <span class="ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></span>
+    View on GitHub
+  </button>
+</div>
+<div class="ctx-toast" id="ctxToast" aria-live="polite"></div>
 <script>
   (function(){
     var btn = document.getElementById('subBtn');
@@ -630,6 +736,89 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       if(!pop.contains(e.target) && e.target !== btn) close();
     });
     document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
+  })();
+
+  /* Custom right-click context menu (Fern-style) */
+  (function(){
+    var ctx = document.getElementById('ctx');
+    var toast = document.getElementById('ctxToast');
+    if(!ctx) return;
+    var lastTarget = null;
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(function(){ toast.classList.remove('show'); }, 1600);
+    }
+
+    function close(){ ctx.classList.remove('open'); }
+
+    function open(x, y){
+      ctx.style.left = '0px';
+      ctx.style.top = '0px';
+      ctx.classList.add('open');
+      var rect = ctx.getBoundingClientRect();
+      var w = rect.width, h = rect.height;
+      var maxX = window.innerWidth - w - 8;
+      var maxY = window.innerHeight - h - 8;
+      ctx.style.left = Math.min(x, maxX) + 'px';
+      ctx.style.top = Math.min(y, maxY) + 'px';
+    }
+
+    document.addEventListener('contextmenu', function(e){
+      // allow native menu inside form fields and links to external resources via shift
+      if(e.shiftKey) return;
+      var t = e.target;
+      if(t && (t.closest('input,textarea,select'))) return;
+      e.preventDefault();
+      lastTarget = t;
+      open(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('click', function(e){
+      if(!ctx.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
+    window.addEventListener('blur', close);
+    window.addEventListener('resize', close);
+    window.addEventListener('scroll', close, { passive: true });
+
+    function copy(text, label){
+      var done = function(){ showToast(label + ' copied'); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(function(){
+          try{ var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }catch(_){ showToast('Copy failed'); }
+        });
+      } else {
+        try{ var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }catch(_){ showToast('Copy failed'); }
+      }
+      close();
+    }
+
+    ctx.addEventListener('click', function(e){
+      var b = e.target.closest('[data-act]');
+      if(!b) return;
+      var act = b.getAttribute('data-act');
+      if(act === 'copy-link'){
+        copy(window.location.href, 'Link');
+      } else if(act === 'copy-status'){
+        fetch('/summary.json').then(function(r){ return r.text(); }).then(function(t){
+          copy(t, 'Status JSON');
+        }).catch(function(){ showToast('Could not load status'); close(); });
+      } else if(act === 'copy-md'){
+        var md = '# ${escapeHtml(title)} Status\\n\\nSee live status: ' + window.location.href;
+        copy(md, 'Markdown');
+      } else if(act === 'view-source'){
+        window.open('https://github.com/${config.owner}/${config.repo}', '_blank', 'noopener');
+        close();
+      } else if(act === 'rss'){
+        window.location.href = '/feed.xml';
+      } else if(act === 'incidents'){
+        window.open('https://github.com/${config.owner}/${config.repo}/issues', '_blank', 'noopener');
+        close();
+      }
+    });
   })();
 </script>
 </body>
