@@ -383,6 +383,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     margin-bottom: 32px;
   }
   .brand { display: flex; align-items: center; gap: 12px; }
+  .brand a { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
   .brand img { height: 44px; width: auto; display: block; }
   .updates {
     display: inline-flex; align-items: center; gap: 8px;
@@ -646,7 +647,9 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 <div class="page">
   <header class="top">
     <div class="brand">
-      ${logo ? `<img src="${escapeHtml(logo)}" alt="${escapeHtml(title)}" />` : ""}
+      <a href="/" aria-label="${escapeHtml(title)} status home">
+        ${logo ? `<img src="${escapeHtml(logo)}" alt="${escapeHtml(title)}" />` : escapeHtml(title)}
+      </a>
     </div>
     <div class="sub-wrap">
       <button class="updates" id="subBtn" type="button" aria-haspopup="true" aria-expanded="false">
@@ -688,7 +691,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 
   <footer>
     <span>Last updated ${escapeHtml(new Date(generatedAt).toUTCString())}</span>
-    <span>© EmpirioLabs AI</span>
+    <span>© ${new Date().getUTCFullYear()} EmpirioLabs AI</span>
   </footer>
 </div>
 
