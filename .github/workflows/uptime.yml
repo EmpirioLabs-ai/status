@@ -1,0 +1,17 @@
+name: Uptime CI
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  repository_dispatch:
+    types: [uptime]
+  workflow_dispatch:
+jobs:
+  release:
+    name: Check status of all endpoints
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: upptime/uptime-monitor@v1
+        with:
+          command: "update"
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}

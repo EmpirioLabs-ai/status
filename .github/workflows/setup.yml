@@ -1,0 +1,19 @@
+name: Setup CI
+on:
+  push:
+    branches:
+      - main
+      - master
+  repository_dispatch:
+    types: [setup]
+  workflow_dispatch:
+jobs:
+  release:
+    name: Setup Upptime
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: upptime/uptime-monitor@v1
+        with:
+          command: "setup"
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
