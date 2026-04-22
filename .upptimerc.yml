@@ -14,11 +14,19 @@ sites:
     expectedStatusCodes: [200, 301, 302, 308]
     icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
 
-  - name: API
-    url: https://api.empiriolabs.ai/health
+  - name: API Gateway
+    url: https://api.empiriolabs.ai/livez
     slug: api
     expectedStatusCodes: [200]
     __dangerous__body_down_if_text_missing: '"status":"ok"'
+    icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
+
+  - name: API Workers
+    url: https://api.empiriolabs.ai/health
+    slug: api-workers
+    expectedStatusCodes: [200]
+    __dangerous__body_degraded_if_text_missing: '"status":"ok"'
+    __dangerous__body_down_if_text_missing: '"service":"gateway"'
     icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
 
 status-website:

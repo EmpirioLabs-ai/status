@@ -560,6 +560,78 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
   .empty { color: #6b7790; font-size: 0.9rem; padding: 4px 0; }
 
+  /* live workers */
+  .workers-meta {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    color: #a8b3c7; font-size: 0.85rem;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #0e1a31;
+    margin-bottom: 4px;
+  }
+  .workers-meta strong { color: #e6edf6; font-weight: 600; }
+  .workers-meta .sep { color: #2a3a5c; }
+  .workers-refresh {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid #14233f;
+    color: #a8b3c7;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font: inherit; font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease;
+  }
+  .workers-refresh:hover:not(:disabled) { border-color: #0a7cff; color: #4a9bff; }
+  .workers-refresh:disabled { opacity: 0.5; cursor: wait; }
+  .workers-grid { display: flex; flex-direction: column; }
+  .worker-row {
+    display: grid;
+    grid-template-columns: 16px 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #0e1a31;
+    font-size: 0.9rem;
+  }
+  .worker-row:last-child { border-bottom: 0; }
+  .worker-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-left: 4px;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0); transition: box-shadow 160ms ease;
+  }
+  .worker-dot.ok { background: #1ed688; box-shadow: 0 0 0 3px rgba(30,214,136,0.12); }
+  .worker-dot.suspended { background: #5a6680; }
+  .worker-dot.down { background: #ff4d6a; box-shadow: 0 0 0 3px rgba(255,77,106,0.18); }
+  .worker-name {
+    color: #e6edf6; font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85rem;
+  }
+  .worker-state {
+    font-size: 0.78rem;
+    color: #a8b3c7;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .worker-row.ok .worker-state { color: #1ed688; }
+  .worker-row.suspended .worker-state { color: #6b7790; }
+  .worker-row.down .worker-state { color: #ff4d6a; }
+  .worker-detail {
+    color: #6b7790; font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    min-width: 70px;
+  }
+  .workers-loading, .workers-error {
+    color: #6b7790; font-size: 0.85rem; padding: 14px 0; text-align: center;
+  }
+  .workers-error { color: #ff4d6a; }
+  @media (max-width: 520px) {
+    .worker-row { grid-template-columns: 16px 1fr auto; }
+    .worker-detail { display: none; }
+  }
+
   /* custom right-click context menu */
   .ctx {
     position: fixed;
@@ -687,6 +759,26 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     ${sitesHtml}
   </section>
 
+  <section class="card" id="workersCard">
+    <div class="card-header">
+      <span>API workers</span>
+      <span class="card-range" id="workersUpdated">Loading…</span>
+    </div>
+    <div class="workers-meta" id="workersMeta" hidden>
+      <span><strong id="wmUp">0</strong> operational</span>
+      <span class="sep">·</span>
+      <span><strong id="wmIdle">0</strong> idle</span>
+      <span class="sep">·</span>
+      <span><strong id="wmDown">0</strong> down</span>
+      <span class="sep">·</span>
+      <span>of <strong id="wmTotal">0</strong> total</span>
+      <button type="button" class="workers-refresh" id="wmRefresh" title="Force a fresh probe">Refresh</button>
+    </div>
+    <div class="workers-grid" id="workersGrid">
+      <div class="workers-loading">Fetching live worker status…</div>
+    </div>
+  </section>
+
   ${renderIncidentsSection(incidents)}
 
   <footer>
@@ -739,6 +831,126 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       if(!pop.contains(e.target) && e.target !== btn) close();
     });
     document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
+  })();
+
+  /* Live API workers grid (auto-refreshing every 30s) */
+  (function(){
+    var grid = document.getElementById('workersGrid');
+    var meta = document.getElementById('workersMeta');
+    var updated = document.getElementById('workersUpdated');
+    var refreshBtn = document.getElementById('wmRefresh');
+    if(!grid) return;
+
+    var ENDPOINT = 'https://api.empiriolabs.ai/health';
+    var POLL_MS = 30000;
+    var pollTimer = null;
+    var lastChecked = null;
+    var ageTimer = null;
+
+    function esc(s){
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function ageText(iso){
+      if(!iso) return '';
+      var diff = Math.max(0, Date.now() - new Date(iso).getTime());
+      var s = Math.floor(diff / 1000);
+      if(s < 5) return 'just now';
+      if(s < 60) return s + 's ago';
+      var m = Math.floor(s / 60);
+      if(m < 60) return m + 'm ago';
+      var h = Math.floor(m / 60);
+      return h + 'h ago';
+    }
+
+    function tickAge(){
+      if(lastChecked && updated) updated.textContent = 'Updated ' + ageText(lastChecked);
+    }
+
+    function rowsFromData(data){
+      var workers = data.workers || {};
+      var keys = Object.keys(workers).sort(function(a,b){ return a.localeCompare(b); });
+      if(keys.length === 0){
+        return '<div class="workers-loading">No workers reported.</div>';
+      }
+      return keys.map(function(name){
+        var w = workers[name] || {};
+        var st = w.status === 'ok' || w.status === 'suspended' || w.status === 'down' ? w.status : 'down';
+        var label = st === 'ok' ? 'Operational' : st === 'suspended' ? 'Idle' : 'Down';
+        var detail = '';
+        if(st === 'ok' && typeof w.latency_ms === 'number') detail = w.latency_ms + ' ms';
+        else if(st === 'suspended') detail = w.info || 'Scaled to zero';
+        else if(st === 'down') detail = w.error || 'Unreachable';
+        var title = '';
+        if(Array.isArray(w.models) && w.models.length){
+          title = 'Models: ' + w.models.join(', ');
+        }
+        if(w.machines){
+          var mparts = [];
+          for(var k in w.machines){ if(Object.prototype.hasOwnProperty.call(w.machines,k)) mparts.push(w.machines[k]+' '+k); }
+          if(mparts.length) title += (title ? ' · ' : '') + 'Machines: ' + mparts.join(', ');
+        }
+        return '<div class="worker-row ' + esc(st) + '" title="' + esc(title) + '">' +
+          '<span class="worker-dot ' + esc(st) + '" aria-hidden="true"></span>' +
+          '<span class="worker-name">' + esc(name) + '</span>' +
+          '<span class="worker-state">' + esc(label) + '</span>' +
+          '<span class="worker-detail">' + esc(detail) + '</span>' +
+          '</div>';
+      }).join('');
+    }
+
+    function render(data){
+      grid.innerHTML = rowsFromData(data);
+      if(meta) meta.hidden = false;
+      var up = data.workers_up || 0;
+      var idle = data.workers_suspended || 0;
+      var down = data.workers_down || 0;
+      var total = data.workers_total || (up + idle + down);
+      var n = function(id, v){ var el = document.getElementById(id); if(el) el.textContent = v; };
+      n('wmUp', up); n('wmIdle', idle); n('wmDown', down); n('wmTotal', total);
+      lastChecked = data.checked_at || new Date().toISOString();
+      tickAge();
+    }
+
+    function showError(msg){
+      grid.innerHTML = '<div class="workers-error">' + esc(msg || 'Could not fetch worker status.') + '</div>';
+    }
+
+    function load(force){
+      if(refreshBtn){ refreshBtn.disabled = true; }
+      var url = ENDPOINT + (force ? '?refresh=1' : '');
+      var ctrl = ('AbortController' in window) ? new AbortController() : null;
+      var timeoutId = ctrl ? setTimeout(function(){ ctrl.abort(); }, 10000) : null;
+      fetch(url, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+        .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(data){ render(data); })
+        .catch(function(e){ showError('Live status unavailable (' + (e && e.message ? e.message : 'error') + ')'); })
+        .then(function(){
+          if(timeoutId) clearTimeout(timeoutId);
+          if(refreshBtn){ refreshBtn.disabled = false; }
+        });
+    }
+
+    function start(){
+      load(false);
+      clearInterval(pollTimer);
+      pollTimer = setInterval(function(){ load(false); }, POLL_MS);
+      clearInterval(ageTimer);
+      ageTimer = setInterval(tickAge, 1000);
+    }
+    function stop(){ clearInterval(pollTimer); clearInterval(ageTimer); }
+
+    document.addEventListener('visibilitychange', function(){
+      if(document.hidden) stop(); else start();
+    });
+
+    if(refreshBtn){
+      refreshBtn.addEventListener('click', function(){ load(true); });
+    }
+
+    start();
   })();
 
   /* Custom right-click context menu (Fern-style) */
