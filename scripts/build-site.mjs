@@ -854,8 +854,21 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     }
 
     function ageText(iso){
-      if(!iso) return '';
-      var diff = Math.max(0, Date.now() - new Date(iso).getTime());
+      if(iso == null || iso === '') return '';
+      var t;
+      if(typeof iso === 'number'){
+        // Unix timestamp; gateway returns seconds, but tolerate ms too
+        t = iso < 1e12 ? iso * 1000 : iso;
+      } else {
+        var n = Number(iso);
+        if(!isNaN(n) && n > 0){
+          t = n < 1e12 ? n * 1000 : n;
+        } else {
+          t = new Date(iso).getTime();
+        }
+      }
+      if(!t || isNaN(t)) return '';
+      var diff = Math.max(0, Date.now() - t);
       var s = Math.floor(diff / 1000);
       if(s < 5) return 'just now';
       if(s < 60) return s + 's ago';
@@ -910,7 +923,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       var total = data.workers_total || (up + idle + down);
       var n = function(id, v){ var el = document.getElementById(id); if(el) el.textContent = v; };
       n('wmUp', up); n('wmIdle', idle); n('wmDown', down); n('wmTotal', total);
-      lastChecked = data.checked_at || new Date().toISOString();
+      lastChecked = data.checked_at != null ? data.checked_at : Date.now();
       tickAge();
     }
 
