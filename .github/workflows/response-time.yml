@@ -10,6 +10,7 @@ jobs:
     name: Check response time
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v4
       - uses: upptime/uptime-monitor@master
         with:
           command: "response-time"
