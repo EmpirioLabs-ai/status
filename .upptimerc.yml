@@ -4,6 +4,75 @@ owner: EmpirioLabs-ai
 repo: status
 
 sites:
+  - name: Website
+    url: https://empiriolabs.ai
+    expectedStatusCodes: [200, 301, 302, 308]
+    icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
+
+  - name: Documentation
+    url: https://docs.empiriolabs.ai
+    expectedStatusCodes: [200, 301, 302, 308]
+    icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
+
+  - name: API Gateway
+    url: https://api.empiriolabs.ai/health
+    expectedStatusCodes: [200]
+    __dangerous__body_down_if_text_missing: '"status":"ok"'
+    icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
+
+status-website:
+  cname: status.empiriolabs.ai
+  baseUrl: /
+  name: EmpirioLabs AI
+  introTitle: "EmpirioLabs AI Status"
+  introMessage: >
+    Real-time operational status of EmpirioLabs AI services. If you're
+    experiencing an issue not reflected here, please reach out to
+    [support@empiriolabs.ai](mailto:support@empiriolabs.ai).
+  logoUrl: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69b02b1b963b4d73af041e88_site-logo.webp
+  favicon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
+  themeUrl: /empirio.css
+  metaTags:
+    - name: "color-scheme"
+      content: "dark"
+    - name: "theme-color"
+      content: "#000815"
+    - name: "description"
+      content: "Live operational status of EmpirioLabs AI services."
+  links:
+    - rel: preconnect
+      href: https://fonts.googleapis.com
+    - rel: stylesheet
+      href: https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap
+    - rel: apple-touch-icon
+      href: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc25f14bac66bde01da4d_256x256.png
+
+i18n:
+  footer: "© EmpirioLabs AI"
+
+assignees:
+  - Adam-Dalloul
+
+# How often to run uptime checks (cron)
+workflowSchedule:
+  graphs: "0 0 * * *"
+  responseTime: "0 23 * * *"
+  staticSite: "0 1 * * *"
+  summary: "0 0 * * *"
+  updates: "0 3 * * *"
+  updateTemplate: "0 0 * * 0"
+  uptime: "*/5 * * * *"
+
+# Open an incident issue when a site goes down
+notifications:
+  - type: github
+    label: status
+# See https://upptime.js.org/docs/configuration for full docs
+
+owner: EmpirioLabs-ai
+repo: status
+
+sites:
   - name: Main Site
     url: https://empiriolabs.ai
     expectedStatusCodes: [200, 301, 302, 308]

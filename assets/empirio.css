@@ -1,0 +1,83 @@
+/* EmpirioLabs AI custom theme — matches empiriolabs.ai */
+
+:root {
+  /* Brand */
+  --body-background-color: #000815;
+  --body-text-color: #e6edf6;
+
+  /* Cards / surfaces */
+  --card-background-color: #060f22;
+  --card-border-color: #14233f;
+
+  /* Nav */
+  --nav-background-color: #000815;
+  --nav-border-bottom-color: #14233f;
+  --nav-current-border-bottom-color: #0a7cff;
+
+  /* Status pills */
+  --tag-color: #000815;
+  --tag-up-background-color: #1ed688;
+  --tag-down-background-color: #ff4d6a;
+  --tag-degraded-background-color: #ffb547;
+
+  --up-border-left-color: #1ed688;
+  --down-border-left-color: #ff4d6a;
+  --degraded-border-left-color: #ffb547;
+  --down-background-color: #2a0d15;
+
+  --change-background-color: #ffb547;
+
+  /* Buttons */
+  --error-button-border-color: #0a7cff;
+  --error-button-background-color: #0a7cff;
+  --error-button-color: #ffffff;
+  --submit-button-border-color: #0a7cff;
+  --submit-button-background-color: #0a7cff;
+  --submit-button-color: #ffffff;
+
+  --graph-opacity: 1;
+  --graph-filter: none;
+}
+
+/* Typography */
+html, body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.005em;
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+/* Soften card edges and add subtle depth */
+.site, .container > .card, [class*="status-card"], section {
+  border-radius: 12px;
+}
+
+/* Logo sizing */
+nav img, header img {
+  max-height: 32px;
+  width: auto;
+}
+
+/* Hide Upptime attribution in footer */
+footer a[href*="upptime"],
+footer a[href*="upptime.js.org"] {
+  display: none !important;
+}
+footer {
+  opacity: 0.55;
+  font-size: 0.8rem;
+}
+
+/* Tighten link colour to brand */
+a {
+  color: #4a9bff;
+}
+a:hover {
+  color: #66adff;
+}
