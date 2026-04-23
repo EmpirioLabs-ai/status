@@ -53,6 +53,18 @@ const STATE_FILE = join(HISTORY_DIR, "sites-state.json");
 const CONFIG_FILE = join(ROOT, ".upptimerc.yml");
 const HISTORY_DAYS = Number(process.env.HISTORY_DAYS || 90);
 const FETCH_TIMEOUT_MS = Number(process.env.FETCH_TIMEOUT_MS || 15000);
+// In-run sampling loop. GitHub Actions scheduled cron is heavily throttled
+// (often firing every ~30–90 min instead of the requested */5), so a single
+// probe per workflow run leaves us with very few samples/day. Instead, take
+// SAMPLES_PER_RUN probes spaced SAMPLE_INTERVAL_SECONDS apart inside one run,
+// then commit a single batched state-file update at the end. With the defaults
+// (10 samples × 30s = ~5 min per run) we collect ~10 samples per cron firing,
+// which yields 100+ samples/day even when cron is sluggish.
+const SAMPLES_PER_RUN = Math.max(1, Number(process.env.SAMPLES_PER_RUN || 10));
+const SAMPLE_INTERVAL_SECONDS = Math.max(
+  5,
+  Number(process.env.SAMPLE_INTERVAL_SECONDS || 30)
+);
 
 function slugify(name) {
   return String(name)
@@ -226,6 +238,21 @@ function recordSample(state, slug, site, result, nowUnix) {
   trimBuckets(entry, nowUnix);
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function probeRound(sites) {
+  // All sites in parallel — small N, all independent network calls.
+  return Promise.all(
+    sites.map(async (site) => {
+      const slug = site.slug || slugify(site.name);
+      const result = await probe(site);
+      return { slug, site, result };
+    })
+  );
+}
+
 async function main() {
   const cfg = loadConfig();
   const sites = Array.isArray(cfg.sites) ? cfg.sites : [];
@@ -234,30 +261,29 @@ async function main() {
     process.exit(1);
   }
   const state = loadState();
-  const nowUnix = Math.floor(Date.now() / 1000);
+  let totalSamples = 0;
 
-  // Probe in parallel — small N, all independent.
-  const results = await Promise.all(
-    sites.map(async (site) => {
-      const slug = site.slug || slugify(site.name);
-      const result = await probe(site);
-      return { slug, site, result };
-    })
-  );
-
-  for (const { slug, site, result } of results) {
-    recordSample(state, slug, site, result, nowUnix);
-    console.log(
-      `[record-sites] ${slug}: ${result.status} (code=${result.code}, latency=${result.latency_ms}ms)${
-        result.error ? ` err="${result.error}"` : ""
-      }`
-    );
+  for (let i = 0; i < SAMPLES_PER_RUN; i++) {
+    const sampleUnix = Math.floor(Date.now() / 1000);
+    const results = await probeRound(sites);
+    for (const { slug, site, result } of results) {
+      recordSample(state, slug, site, result, sampleUnix);
+      console.log(
+        `[record-sites] sample ${i + 1}/${SAMPLES_PER_RUN} ${slug}: ${result.status} (code=${result.code}, latency=${result.latency_ms}ms)${
+          result.error ? ` err="${result.error}"` : ""
+        }`
+      );
+    }
+    totalSamples += results.length;
+    state.updated_at = sampleUnix;
+    if (i < SAMPLES_PER_RUN - 1) {
+      await sleep(SAMPLE_INTERVAL_SECONDS * 1000);
+    }
   }
 
-  state.updated_at = nowUnix;
   saveState(state);
   console.log(
-    `[record-sites] recorded ${results.length} sites @ ${utcDay(nowUnix)} (${nowUnix})`
+    `[record-sites] recorded ${totalSamples} samples across ${sites.length} sites in ${SAMPLES_PER_RUN} rounds @ ${utcDay(state.updated_at)} (${state.updated_at})`
   );
 }
 

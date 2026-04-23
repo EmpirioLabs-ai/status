@@ -1,7 +1,10 @@
 name: Sites History CI
 on:
   schedule:
-    # Every 5 minutes (best-effort; GitHub may delay/skip on free tier).
+    # Cron is best-effort on GitHub Actions free tier (often delayed/skipped
+    # by 30–90 min). Each run takes multiple samples internally via
+    # SAMPLES_PER_RUN/SAMPLE_INTERVAL_SECONDS in record-sites.mjs, so the
+    # effective sample rate is much higher than this cron interval.
     - cron: "*/5 * * * *"
   workflow_dispatch:
 
@@ -14,6 +17,9 @@ jobs:
   record:
     name: Record sites snapshot
     runs-on: ubuntu-22.04
+    # Long enough for a full SAMPLES_PER_RUN × SAMPLE_INTERVAL_SECONDS loop
+    # plus checkout/install/commit overhead. Default of 360 min is wasteful.
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:

@@ -44,6 +44,16 @@ const ENDPOINT =
   process.env.HEALTH_ENDPOINT || "https://api.empiriolabs.ai/health";
 const HISTORY_DAYS = Number(process.env.HISTORY_DAYS || 90);
 const FETCH_TIMEOUT_MS = 15000;
+// In-run sampling loop. GitHub Actions scheduled cron is heavily throttled
+// (often firing every ~30–90 min instead of the requested */5), so a single
+// sample per workflow run leaves us with very few datapoints/day. Instead,
+// take SAMPLES_PER_RUN snapshots spaced SAMPLE_INTERVAL_SECONDS apart inside
+// one run. Defaults: 10 snapshots × 30s = ~5 min per run.
+const SAMPLES_PER_RUN = Math.max(1, Number(process.env.SAMPLES_PER_RUN || 10));
+const SAMPLE_INTERVAL_SECONDS = Math.max(
+  5,
+  Number(process.env.SAMPLE_INTERVAL_SECONDS || 30)
+);
 
 function utcDay(unixSeconds) {
   const d = new Date(unixSeconds * 1000);
@@ -174,15 +184,48 @@ function recordSample(state, data, nowUnix) {
   return seen.size;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function main() {
-  const data = await fetchHealth();
-  const checkedAt = typeof data.checked_at === "number" ? data.checked_at : null;
-  const nowUnix = checkedAt ?? Math.floor(Date.now() / 1000);
   const state = loadState();
-  const recorded = recordSample(state, data, nowUnix);
+  let totalSamples = 0;
+  let lastSampleUnix = 0;
+  let lastWorkerCount = 0;
+
+  for (let i = 0; i < SAMPLES_PER_RUN; i++) {
+    let data;
+    try {
+      data = await fetchHealth();
+    } catch (err) {
+      console.error(
+        `[record-models] sample ${i + 1}/${SAMPLES_PER_RUN} fetch failed: ${err && err.message ? err.message : err}`
+      );
+      if (i < SAMPLES_PER_RUN - 1) await sleep(SAMPLE_INTERVAL_SECONDS * 1000);
+      continue;
+    }
+    const checkedAt = typeof data.checked_at === "number" ? data.checked_at : null;
+    const sampleUnix = checkedAt ?? Math.floor(Date.now() / 1000);
+    const recorded = recordSample(state, data, sampleUnix);
+    totalSamples += 1;
+    lastSampleUnix = sampleUnix;
+    lastWorkerCount = recorded;
+    console.log(
+      `[record-models] sample ${i + 1}/${SAMPLES_PER_RUN}: ${recorded} workers @ ${utcDay(sampleUnix)} (${sampleUnix})`
+    );
+    if (i < SAMPLES_PER_RUN - 1) {
+      await sleep(SAMPLE_INTERVAL_SECONDS * 1000);
+    }
+  }
+
+  if (totalSamples === 0) {
+    throw new Error("all sample fetches failed in this run");
+  }
+
   saveState(state);
   console.log(
-    `[record-models] recorded ${recorded} workers @ ${utcDay(nowUnix)} (${nowUnix})`
+    `[record-models] recorded ${totalSamples} samples (${lastWorkerCount} workers in last sample) @ ${utcDay(lastSampleUnix)} (${lastSampleUnix})`
   );
 }
 
