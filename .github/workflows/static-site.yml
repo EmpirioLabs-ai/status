@@ -6,6 +6,9 @@ on:
     branches:
       - main
       - master
+  workflow_run:
+    workflows: ["Uptime CI", "Response Time CI", "Summary CI"]
+    types: [completed]
   repository_dispatch:
     types: [static_site]
   workflow_dispatch:
