@@ -1,0 +1,33 @@
+{
+	"name": "status",
+	"image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"customizations": {
+		"codespaces": {
+			"repositories": {
+				"EmpirioLabs-ai/status": {
+					"permissions": {
+						"contents": "write",
+						"actions": "write",
+						"workflows": "write",
+						"pages": "write",
+						"metadata": "read",
+						"pull_requests": "write"
+					}
+				}
+			}
+		},
+		"vscode": {
+			"extensions": [
+				"github.vscode-github-actions",
+				"redhat.vscode-yaml"
+			]
+		}
+	},
+	"postCreateCommand": "npm install --no-audit --no-fund && echo 'unset GITHUB_TOKEN GH_TOKEN' >> ~/.bashrc",
+	"postAttachCommand": {
+		"hint": "echo '\\n👉 If gh commands fail with 403, run:  unset GITHUB_TOKEN GH_TOKEN && gh auth login -h github.com -p https -s repo,workflow,admin:org -w\\n'"
+	}
+}
