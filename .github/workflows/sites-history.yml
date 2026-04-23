@@ -1,11 +1,11 @@
 name: Sites History CI
 on:
-  schedule:
-    # Standard Upptime-style cadence: attempt a check every 5 minutes, but
-    # offset away from :00 where GitHub says schedule load is highest.
-    # GitHub-hosted schedules are still best-effort, so some runs may land
-    # late, but each completed run contributes one real check to the page.
-    - cron: "2/5 * * * *"
+  workflow_run:
+    # Piggyback on the built-in Upptime scheduler instead of relying on a
+    # second independent cron. Uptime CI is the cadence source of truth.
+    workflows:
+      - "Uptime CI"
+    types: [completed]
   workflow_dispatch:
 
 # Prevent overlapping runs from racing on the state file.
@@ -16,6 +16,7 @@ concurrency:
 jobs:
   record:
     name: Record sites snapshot
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     env:
