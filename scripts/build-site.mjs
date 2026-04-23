@@ -1186,14 +1186,29 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     function createTile(name, w, st, label){
       // New worker (no historical bars yet) — inserted at sorted position.
       // Render an empty bars strip with the same number of slots as the
-      // server-rendered tiles so the layout is identical. The recorder
-      // workflow will fill in real buckets on its next run.
+      // server-rendered tiles, each carrying its own date tooltip so hover
+      // behavior is identical. The recorder workflow will fill in real
+      // status as it accumulates samples.
       var el = document.createElement('div');
       el.className = 'worker-tile';
       el.setAttribute('data-worker', name);
       var emptyBars = '';
-      for(var i = 0; i < ${HISTORY_DAYS}; i++){
-        emptyBars += '<span class="bar bar-none"></span>';
+      // Build YYYY-MM-DD labels for the last N days, oldest first (matches
+      // server-rendered ordering: leftmost = N days ago, rightmost = today).
+      var todayMs = Date.now();
+      for(var i = ${HISTORY_DAYS} - 1; i >= 0; i--){
+        var d = new Date(todayMs - i * 86400000);
+        var ymd = d.getUTCFullYear() + '-' +
+          String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getUTCDate()).padStart(2, '0');
+        emptyBars +=
+          '<span class="bar bar-none" tabindex="0">' +
+            '<span class="bar-tip" role="tooltip">' +
+              '<span class="tt-date">' + esc(ymd) + '</span>' +
+              '<span class="tt-status"><span class="tt-dot tt-dot-none"></span>No data</span>' +
+              '<span class="tt-row tt-muted">No checks recorded</span>' +
+            '</span>' +
+          '</span>';
       }
       el.innerHTML =
         '<div class="worker-row ' + esc(st) + '" data-tile-row title="' + esc(tileTitle(name, w)) + '">' +
