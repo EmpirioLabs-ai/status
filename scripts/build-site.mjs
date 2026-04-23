@@ -196,6 +196,50 @@ function siteBucketsFromState(siteEntry, days = HISTORY_DAYS) {
   return out;
 }
 
+function statusPriority(status) {
+  if (status === "down") return 3;
+  if (status === "degraded") return 2;
+  if (status === "up") return 1;
+  return 0;
+}
+
+// During the migration from git-log-derived service history to the compact
+// recorder state file, preserve existing historical bars by merging both
+// sources day-by-day. The recorder wins for current metadata, but the rendered
+// history should remain continuous instead of dropping all pre-recorder days.
+function mergeSiteBuckets(legacyBuckets, stateBuckets) {
+  return legacyBuckets.map((legacy, index) => {
+    const state = stateBuckets[index];
+    if (!state || state.status === "none") return legacy;
+    if (!legacy || legacy.status === "none") return state;
+
+    const legacyLatencySamples = legacy.latencySamples || legacy.checks || 0;
+    const stateLatencySamples = state.latencySamples || state.checks || 0;
+    const totalLatencySamples = legacyLatencySamples + stateLatencySamples;
+    const avgResponseTime =
+      totalLatencySamples > 0
+        ? Math.round(
+            ((legacy.avgResponseTime || 0) * legacyLatencySamples +
+              (state.avgResponseTime || 0) * stateLatencySamples) /
+              totalLatencySamples
+          )
+        : 0;
+
+    return {
+      date: state.date,
+      status:
+        statusPriority(state.status) >= statusPriority(legacy.status)
+          ? state.status
+          : legacy.status,
+      checks: (legacy.checks || 0) + (state.checks || 0),
+      avgResponseTime,
+      latencySamples: totalLatencySamples,
+      ok: (legacy.ok || 0) + (state.ok || 0),
+      down: (legacy.down || 0) + (state.down || 0),
+    };
+  });
+}
+
 // ---- Models state (history/models-state.json) ----
 function readModelsState() {
   const p = join(ROOT, "history", "models-state.json");
@@ -328,13 +372,19 @@ function buildSitePayload(config) {
   const sites = (config.sites || []).map((s) => {
     const slug = s.slug || slugify(s.name);
     const stateEntry = sitesState && sitesState.sites[slug];
+    const current = readHistoryFile(slug);
+    const history = getHistory(slug, HISTORY_DAYS);
+    const legacyBuckets = bucketByDay(history, HISTORY_DAYS);
 
     let status, code, responseTime, lastUpdated, buckets;
     if (stateEntry) {
-      // Prefer the recorder-driven state file: it produces dense, reliable
-      // history regardless of how often the upstream upptime-monitor
-      // workflow actually fires.
-      buckets = siteBucketsFromState(stateEntry, HISTORY_DAYS);
+      // Prefer the recorder-driven state file for current status, but merge it
+      // with the legacy git-derived history so earlier days remain visible
+      // while the recorder fills in its own window.
+      buckets = mergeSiteBuckets(
+        legacyBuckets,
+        siteBucketsFromState(stateEntry, HISTORY_DAYS)
+      );
       status = stateEntry.last_status || "unknown";
       code = stateEntry.last_code || 0;
       responseTime = stateEntry.last_latency_ms || 0;
@@ -343,9 +393,7 @@ function buildSitePayload(config) {
         : null;
     } else {
       // Legacy fallback: derive from per-file YAML + git log.
-      const current = readHistoryFile(slug);
-      const history = getHistory(slug, HISTORY_DAYS);
-      buckets = bucketByDay(history, HISTORY_DAYS);
+      buckets = legacyBuckets;
       status = current?.status || "unknown";
       code = current?.code || 0;
       responseTime = current?.responseTime || 0;
