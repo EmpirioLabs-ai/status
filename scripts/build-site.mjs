@@ -761,7 +761,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 
   <section class="card" id="workersCard">
     <div class="card-header">
-      <span>API workers</span>
+      <span>Models</span>
       <span class="card-range" id="workersUpdated">Loading…</span>
     </div>
     <div class="workers-meta" id="workersMeta" hidden>
@@ -833,7 +833,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
   })();
 
-  /* Live API workers grid (auto-refreshing every 30s) */
+  /* Live Models grid (auto-refreshing every 30s) */
   (function(){
     var grid = document.getElementById('workersGrid');
     var meta = document.getElementById('workersMeta');

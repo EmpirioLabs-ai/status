@@ -21,9 +21,9 @@ sites:
     __dangerous__body_down_if_text_missing: '"status":"ok"'
     icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
 
-  - name: API Workers
+  - name: Models
     url: https://api.empiriolabs.ai/health
-    slug: api-workers
+    slug: models
     expectedStatusCodes: [200]
     __dangerous__body_down_if_text_missing: '"service":"gateway"'
     icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
