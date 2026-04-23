@@ -330,13 +330,26 @@ function renderHtml({ config, sites, overall, incidents, generatedAt }) {
               : b.status === "down"
               ? "Outage"
               : "No data";
-          const tipDate = escapeHtml(b.date);
-          const tipStatus = escapeHtml(statusLabel);
-          const tipDetail =
+          const dotCls =
+            b.status === "up"
+              ? "tt-dot tt-dot-up"
+              : b.status === "degraded"
+              ? "tt-dot tt-dot-degraded"
+              : b.status === "down"
+              ? "tt-dot tt-dot-down"
+              : "tt-dot tt-dot-none";
+          const checksLine =
             b.status === "none"
-              ? "No checks recorded"
-              : `${b.checks} check${b.checks === 1 ? "" : "s"} · avg ${b.avgResponseTime} ms`;
-          return `<span class="${cls}" tabindex="0" data-date="${tipDate}" data-status="${tipStatus}" data-detail="${escapeHtml(tipDetail)}"></span>`;
+              ? `<div class="tt-row tt-muted">No checks recorded</div>`
+              : `<div class="tt-row"><span class="tt-key">Checks</span><span class="tt-val">${b.checks}</span></div>
+                 <div class="tt-row"><span class="tt-key">Avg response</span><span class="tt-val">${b.avgResponseTime} ms</span></div>`;
+          const tip = `
+            <span class="bar-tip" role="tooltip">
+              <span class="tt-date">${escapeHtml(b.date)}</span>
+              <span class="tt-status"><span class="${dotCls}"></span>${escapeHtml(statusLabel)}</span>
+              ${checksLine}
+            </span>`;
+          return `<span class="${cls}" tabindex="0">${tip}</span>`;
         })
         .join("");
 
@@ -562,70 +575,97 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     background: #1c2e51;
   }
 
-  /* Custom tooltip (replaces native browser title="") */
-  .bar::before,
-  .bar::after {
+  /* Custom tooltip (real HTML, not CSS attr() trick) */
+  .bar-tip {
     position: absolute;
     left: 50%;
     bottom: calc(100% + 10px);
+    transform: translate(-50%, 4px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 140ms ease, transform 140ms cubic-bezier(.2,.8,.2,1);
-    transform: translate(-50%, 4px);
     z-index: 50;
-  }
-  .bar::before {
-    content: attr(data-date) '\\A ' attr(data-status) '\\A ' attr(data-detail);
-    white-space: pre;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 180px;
+    padding: 10px 12px;
     background: #0a1428;
     color: #e6ecff;
     border: 1px solid #1f2d4a;
     border-radius: 8px;
-    padding: 8px 10px;
     font-size: 0.72rem;
-    line-height: 1.45;
+    line-height: 1.35;
     font-weight: 500;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-    min-width: 150px;
     text-align: left;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    white-space: nowrap;
   }
-  .bar::after {
+  .bar-tip::after {
     content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
     width: 0; height: 0;
-    bottom: calc(100% + 4px);
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 6px solid #0a1428;
     filter: drop-shadow(0 1px 0 #1f2d4a);
   }
-  .bar:hover::before,
-  .bar:hover::after,
-  .bar:focus-visible::before,
-  .bar:focus-visible::after {
+  .bar:hover .bar-tip,
+  .bar:focus-visible .bar-tip {
     opacity: 1;
     transform: translate(-50%, 0);
   }
-  /* Edge bars: nudge tooltip in so it doesn't clip the card */
-  .bars .bar:nth-child(-n+5)::before,
-  .bars .bar:nth-child(-n+5)::after { left: 0; transform: translate(0, 4px); }
-  .bars .bar:nth-child(-n+5):hover::before,
-  .bars .bar:nth-child(-n+5):hover::after,
-  .bars .bar:nth-child(-n+5):focus-visible::before,
-  .bars .bar:nth-child(-n+5):focus-visible::after {
+  .tt-date {
+    color: #8a96b3;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .tt-status {
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 600; font-size: 0.78rem;
+    color: #e6ecff;
+    margin-bottom: 2px;
+  }
+  .tt-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  }
+  .tt-dot-up { background: #1ed688; }
+  .tt-dot-degraded { background: #ffb547; }
+  .tt-dot-down { background: #ff4d6a; }
+  .tt-dot-none { background: #4a5568; }
+  .tt-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 18px;
+    color: #b8c2db;
+    font-weight: 400;
+  }
+  .tt-key { color: #8a96b3; }
+  .tt-val { color: #e6ecff; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .tt-muted { color: #8a96b3; font-style: italic; }
+
+  /* Edge bars: anchor tooltip to the side so it doesn't clip the card */
+  .bars .bar:nth-child(-n+5) .bar-tip { left: 0; transform: translate(0, 4px); }
+  .bars .bar:nth-child(-n+5):hover .bar-tip,
+  .bars .bar:nth-child(-n+5):focus-visible .bar-tip {
     transform: translate(0, 0);
   }
-  .bars .bar:nth-last-child(-n+5)::before,
-  .bars .bar:nth-last-child(-n+5)::after { left: auto; right: 0; transform: translate(0, 4px); }
-  .bars .bar:nth-last-child(-n+5):hover::before,
-  .bars .bar:nth-last-child(-n+5):hover::after,
-  .bars .bar:nth-last-child(-n+5):focus-visible::before,
-  .bars .bar:nth-last-child(-n+5):focus-visible::after {
+  .bars .bar:nth-child(-n+5) .bar-tip::after { left: 12px; }
+  .bars .bar:nth-last-child(-n+5) .bar-tip { left: auto; right: 0; transform: translate(0, 4px); }
+  .bars .bar:nth-last-child(-n+5):hover .bar-tip,
+  .bars .bar:nth-last-child(-n+5):focus-visible .bar-tip {
     transform: translate(0, 0);
   }
+  .bars .bar:nth-last-child(-n+5) .bar-tip::after { left: auto; right: 12px; transform: none; }
+
   @media (prefers-reduced-motion: reduce) {
     .bar { transition: none; }
     .bar:hover, .bar:focus-visible { transform: none; }
-    .bar::before, .bar::after { transition: opacity 100ms ease; transform: translate(-50%, 0); }
+    .bar-tip { transition: opacity 100ms ease; transform: translate(-50%, 0); }
   }
 
   .bars-axis {
