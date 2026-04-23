@@ -176,12 +176,29 @@ function modelBuckets(workerEntry, days = HISTORY_DAYS) {
       continue;
     }
     let status;
-    if (b.down > 0) status = "down";
-    else if (b.ok === 0 && b.suspended > 0) status = "degraded";
+    // Day-level rollup, in priority order:
+    //   down     — every sample failed (no successful check all day)
+    //   degraded — at least one success and at least one failure (often
+    //              cold-start timeouts on serverless platforms like Fly)
+    //   cold     — no failures, no successes, only suspended/cold samples
+    //              (worker never woke that day; expected on Fly scale-to-zero,
+    //              shouldn't occur on always-on platforms like Railway)
+    //   up       — at least one success, no failures
+    if (b.down > 0 && b.ok === 0) status = "down";
+    else if (b.down > 0 && b.ok > 0) status = "degraded";
     else if (b.ok > 0) status = "up";
+    else if (b.suspended > 0) status = "cold";
     else status = "none";
     const avg = b.lat_count > 0 ? Math.round(b.lat_sum / b.lat_count) : 0;
-    out.push({ date: ymd, status, checks: b.checks, avgResponseTime: avg });
+    out.push({
+      date: ymd,
+      status,
+      checks: b.checks,
+      avgResponseTime: avg,
+      ok: b.ok || 0,
+      down: b.down || 0,
+      suspended: b.suspended || 0,
+    });
   }
   return out;
 }
@@ -195,6 +212,8 @@ function renderBars(buckets, ariaLabel) {
           ? "bar bar-down"
           : b.status === "degraded"
           ? "bar bar-degraded"
+          : b.status === "cold"
+          ? "bar bar-cold"
           : b.status === "up"
           ? "bar bar-up"
           : "bar bar-none";
@@ -202,7 +221,9 @@ function renderBars(buckets, ariaLabel) {
         b.status === "up"
           ? "Operational"
           : b.status === "degraded"
-          ? "Degraded"
+          ? "Partial outage"
+          : b.status === "cold"
+          ? "Idle (cold)"
           : b.status === "down"
           ? "Outage"
           : "No data";
@@ -211,14 +232,33 @@ function renderBars(buckets, ariaLabel) {
           ? "tt-dot tt-dot-up"
           : b.status === "degraded"
           ? "tt-dot tt-dot-degraded"
+          : b.status === "cold"
+          ? "tt-dot tt-dot-cold"
           : b.status === "down"
           ? "tt-dot tt-dot-down"
           : "tt-dot tt-dot-none";
-      const checksLine =
-        b.status === "none"
-          ? `<div class="tt-row tt-muted">No checks recorded</div>`
-          : `<div class="tt-row"><span class="tt-key">Checks</span><span class="tt-val">${b.checks}</span></div>
-             <div class="tt-row"><span class="tt-key">Avg response</span><span class="tt-val">${b.avgResponseTime} ms</span></div>`;
+      // Build a checks/breakdown line. For mixed buckets show ok/down/cold split.
+      let checksLine;
+      if (b.status === "none") {
+        checksLine = `<div class="tt-row tt-muted">No checks recorded</div>`;
+      } else {
+        const parts = [];
+        if (b.ok) parts.push(`${b.ok} ok`);
+        if (b.down) parts.push(`${b.down} failed`);
+        if (b.suspended) parts.push(`${b.suspended} cold`);
+        const breakdown = parts.length > 1 ? parts.join(" · ") : null;
+        const latLine =
+          b.avgResponseTime > 0
+            ? `<div class="tt-row"><span class="tt-key">Avg response</span><span class="tt-val">${b.avgResponseTime} ms</span></div>`
+            : "";
+        checksLine = `<div class="tt-row"><span class="tt-key">Checks</span><span class="tt-val">${b.checks}</span></div>
+             ${
+               breakdown
+                 ? `<div class="tt-row tt-muted"><span class="tt-key">Breakdown</span><span class="tt-val">${breakdown}</span></div>`
+                 : ""
+             }
+             ${latLine}`;
+      }
       const tip = `
         <span class="bar-tip" role="tooltip">
           <span class="tt-date">${escapeHtml(b.date)}</span>
@@ -399,22 +439,12 @@ function renderHtml({ config, sites, overall, incidents, generatedAt, modelsStat
       const buckets = modelBuckets(w, HISTORY_DAYS);
       const pct = uptimePercent(buckets);
       const todays = buckets[buckets.length - 1];
-      // Initial server-rendered state: derive from today's bucket so tile isn't
-      // blank before live JS hydrates. Live JS overrides this within seconds.
-      const initStatus =
-        todays && todays.status !== "none" ? todays.status : "ok";
-      const stateClass =
-        initStatus === "down"
-          ? "down"
-          : initStatus === "degraded"
-          ? "suspended"
-          : "ok";
-      const stateLabel =
-        initStatus === "down"
-          ? "Down"
-          : initStatus === "degraded"
-          ? "Idle"
-          : "Operational";
+      // Server-rendered initial state is intentionally neutral — the live JS
+      // poller hydrates the dot/state/detail with the gateway's current view
+      // within ~1s. Showing yesterday's rollup here would mislabel a worker
+      // as "Down" or "Idle" when it's actually fine right now.
+      const stateClass = "ok";
+      const stateLabel = "Checking\u2026";
       const barsHtml = renderBars(buckets, `${HISTORY_DAYS} day history for ${key}`);
       return `
         <div class="worker-tile" data-worker="${escapeHtml(key)}">
@@ -664,6 +694,11 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     background: #ffc266;
     box-shadow: 0 0 12px rgba(255, 181, 71, 0.45);
   }
+  .bar-cold { background: #5db8ff; }
+  .bar-cold:hover, .bar-cold:focus-visible {
+    background: #7ac5ff;
+    box-shadow: 0 0 12px rgba(93, 184, 255, 0.45);
+  }
   .bar-down { background: #ff4d6a; }
   .bar-down:hover, .bar-down:focus-visible {
     background: #ff6b85;
@@ -735,6 +770,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   }
   .tt-dot-up { background: #1ed688; }
   .tt-dot-degraded { background: #ffb547; }
+  .tt-dot-cold { background: #5db8ff; }
   .tt-dot-down { background: #ff4d6a; }
   .tt-dot-none { background: #4a5568; }
   .tt-row {
@@ -1147,9 +1183,24 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       return String(s).replace(/(['"\\\\])/g, '\\\\$1');
     }
 
+    function coldCount(w){
+      // Count non-running machines reported by the gateway (Fly.io exposes
+      // started/stopped/suspended; only "started" is warm). Anything else
+      // counts as a cold replica we should hint at in the live row.
+      if(!w || !w.machines) return 0;
+      var n = 0;
+      for(var k in w.machines){
+        if(!Object.prototype.hasOwnProperty.call(w.machines, k)) continue;
+        if(k !== 'started') n += Number(w.machines[k]) || 0;
+      }
+      return n;
+    }
+
     function tileLiveDetail(st, w){
-      if(st === 'ok' && typeof w.latency_ms === 'number') return w.latency_ms + ' ms';
-      if(st === 'suspended') return w.info || 'Scaled to zero';
+      var cold = coldCount(w);
+      var coldHint = cold > 0 ? ' \u00b7 \u2744 ' + cold + ' cold' : '';
+      if(st === 'ok' && typeof w.latency_ms === 'number') return w.latency_ms + ' ms' + coldHint;
+      if(st === 'suspended') return (w.info || 'Scaled to zero') + coldHint;
       if(st === 'down') return w.error || 'Unreachable';
       return '';
     }
