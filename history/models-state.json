@@ -1,0 +1,499 @@
+{
+  "version": 1,
+  "updated_at": 1776911897,
+  "workers": {
+    "deepgram-nova-3": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "deepgram/nova-3",
+        "nova-3",
+        "deepgram-nova-3"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 64.8,
+          "lat_count": 1
+        }
+      }
+    },
+    "falcon-h1r-7b": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "tii/falcon-h1r-7b",
+        "falcon-h1r-7b",
+        "falcon-h1r"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 0,
+          "suspended": 0,
+          "down": 1,
+          "lat_sum": 0,
+          "lat_count": 0
+        }
+      }
+    },
+    "gemma-3-27b": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "google/gemma-3-27b",
+        "gemma-3-27b",
+        "gemma-3-27b-it"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 51.9,
+          "lat_count": 1
+        }
+      }
+    },
+    "janus-pro-7b": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "deepseek/janus-pro-7b",
+        "janus-pro-7b",
+        "janus-pro"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 507.2,
+          "lat_count": 1
+        }
+      }
+    },
+    "magistral-medium-2509": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "mistralai/magistral-medium",
+        "magistral-medium",
+        "magistral-medium-2509"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 59.7,
+          "lat_count": 1
+        }
+      }
+    },
+    "minimax-m27-highspeed": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "minimax/m2.7-highspeed",
+        "minimax-m2.7-highspeed",
+        "MiniMax-M2.7-highspeed",
+        "minimax-m27-highspeed"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 39.4,
+          "lat_count": 1
+        }
+      }
+    },
+    "mistral-medium-3": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "mistralai/mistral-medium-3",
+        "mistral-medium-3"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 53.3,
+          "lat_count": 1
+        }
+      }
+    },
+    "mistral-medium-3-1": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "mistralai/mistral-medium-3.1",
+        "mistral-medium-3.1",
+        "mistral-medium-3-1"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 107.4,
+          "lat_count": 1
+        }
+      }
+    },
+    "mistral-small-3-2": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "mistralai/mistral-small-3.2-24b",
+        "mistral-small-3.2",
+        "mistral-small-3-2"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 54.4,
+          "lat_count": 1
+        }
+      }
+    },
+    "nomic-embed": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "nomic-ai/nomic-embed-text-v1.5",
+        "nomic-embed-text-v1.5",
+        "nomic-embed-v1.5",
+        "nomic-embed",
+        "text-embedding-nomic"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 68.1,
+          "lat_count": 1
+        }
+      }
+    },
+    "nomic-embed-v2": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "nomic-ai/nomic-embed-text-v2-moe",
+        "nomic-embed-text-v2-moe",
+        "nomic-embed-text-v2",
+        "nomic-embed-v2",
+        "text-embedding-nomic-v2"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 40.4,
+          "lat_count": 1
+        }
+      }
+    },
+    "nova-lite": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "amazon/nova-lite",
+        "amazon-nova-lite",
+        "nova-lite",
+        "us.amazon.nova-lite-v1:0"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 331.3,
+          "lat_count": 1
+        }
+      }
+    },
+    "nova-lite-2": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "amazon/nova-lite-2",
+        "amazon-nova-lite-2",
+        "nova-lite-2",
+        "us.amazon.nova-2-lite-v1:0"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 64.3,
+          "lat_count": 1
+        }
+      }
+    },
+    "nova-micro": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "amazon/nova-micro",
+        "amazon-nova-micro",
+        "nova-micro",
+        "us.amazon.nova-micro-v1:0"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 63.5,
+          "lat_count": 1
+        }
+      }
+    },
+    "nova-premier": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "amazon/nova-premier",
+        "amazon-nova-premier",
+        "nova-premier",
+        "us.amazon.nova-premier-v1:0"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 66.8,
+          "lat_count": 1
+        }
+      }
+    },
+    "nova-pro": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "amazon/nova-pro",
+        "amazon-nova-pro",
+        "nova-pro",
+        "amazon.nova-pro-v1:0",
+        "us.amazon.nova-pro-v1:0"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 359.4,
+          "lat_count": 1
+        }
+      }
+    },
+    "qwen3-max": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "qwen/qwen3-max",
+        "qwen3-max"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 39,
+          "lat_count": 1
+        }
+      }
+    },
+    "qwen3-max-preview": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "qwen/qwen3-max-preview",
+        "qwen3-max-preview"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 37.5,
+          "lat_count": 1
+        }
+      }
+    },
+    "qwen3-max-thinking": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "qwen/qwen3-max-thinking",
+        "qwen3-max-thinking",
+        "qwen3-max-2026-01-23"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 298.7,
+          "lat_count": 1
+        }
+      }
+    },
+    "qwen35-flash": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "qwen/qwen3.5-flash",
+        "qwen3.5-flash",
+        "qwen35-flash"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 37.5,
+          "lat_count": 1
+        }
+      }
+    },
+    "qwen36-max-preview": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "qwen/qwen3.6-max-preview",
+        "qwen3.6-max-preview",
+        "qwen36-max-preview"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 37.7,
+          "lat_count": 1
+        }
+      }
+    },
+    "seed-2-code": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "bytedance/seed-2-code",
+        "seed-2-code",
+        "seed-2-0-code",
+        "seed-2-0-code-preview",
+        "seed-2-0-code-preview-260328",
+        "doubao-seed-2-code",
+        "dola-seed-2.0-code"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 39.6,
+          "lat_count": 1
+        }
+      }
+    },
+    "seed-2-lite": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "bytedance/seed-2-lite",
+        "seed-2-lite",
+        "seed-2-0-lite",
+        "seed-2-0-lite-260215",
+        "doubao-seed-2-lite"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 39.7,
+          "lat_count": 1
+        }
+      }
+    },
+    "seed-2-mini": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "bytedance/seed-2-mini",
+        "seed-2-mini",
+        "seed-2-0-mini",
+        "seed-2-0-mini-260215",
+        "doubao-seed-2-mini"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 41.4,
+          "lat_count": 1
+        }
+      }
+    },
+    "seed-2-pro": {
+      "first_seen": 1776911897,
+      "last_seen": 1776911897,
+      "models": [
+        "bytedance/seed-2-pro",
+        "seed-2-pro",
+        "seed-2-0-pro",
+        "seed-2-0-pro-260328",
+        "doubao-seed-2-pro"
+      ],
+      "buckets": {
+        "2026-04-23": {
+          "checks": 1,
+          "ok": 1,
+          "suspended": 0,
+          "down": 0,
+          "lat_sum": 36.4,
+          "lat_count": 1
+        }
+      }
+    }
+  }
+}

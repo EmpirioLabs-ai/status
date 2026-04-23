@@ -144,6 +144,93 @@ function uptimePercent(buckets) {
   return (upish / measured.length) * 100;
 }
 
+// ---- Models state (history/models-state.json) ----
+function readModelsState() {
+  const p = join(ROOT, "history", "models-state.json");
+  if (!existsSync(p)) return { workers: {}, updated_at: 0 };
+  try {
+    const raw = JSON.parse(readFileSync(p, "utf8"));
+    return {
+      workers: raw.workers || {},
+      updated_at: raw.updated_at || 0,
+    };
+  } catch {
+    return { workers: {}, updated_at: 0 };
+  }
+}
+
+// Convert a single worker's recorded buckets into the 90-day bars shape
+// the renderer expects: [{date, status, checks, avgResponseTime}]
+function modelBuckets(workerEntry, days = HISTORY_DAYS) {
+  const recorded = (workerEntry && workerEntry.buckets) || {};
+  const out = [];
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    const ymd = d.toISOString().slice(0, 10);
+    const b = recorded[ymd];
+    if (!b || !b.checks) {
+      out.push({ date: ymd, status: "none", checks: 0, avgResponseTime: 0 });
+      continue;
+    }
+    let status;
+    if (b.down > 0) status = "down";
+    else if (b.ok === 0 && b.suspended > 0) status = "degraded";
+    else if (b.ok > 0) status = "up";
+    else status = "none";
+    const avg = b.lat_count > 0 ? Math.round(b.lat_sum / b.lat_count) : 0;
+    out.push({ date: ymd, status, checks: b.checks, avgResponseTime: avg });
+  }
+  return out;
+}
+
+// Generate the inner HTML for a 90-bar history strip (reused by services + models).
+function renderBars(buckets, ariaLabel) {
+  const inner = buckets
+    .map((b) => {
+      const cls =
+        b.status === "down"
+          ? "bar bar-down"
+          : b.status === "degraded"
+          ? "bar bar-degraded"
+          : b.status === "up"
+          ? "bar bar-up"
+          : "bar bar-none";
+      const statusLabel =
+        b.status === "up"
+          ? "Operational"
+          : b.status === "degraded"
+          ? "Degraded"
+          : b.status === "down"
+          ? "Outage"
+          : "No data";
+      const dotCls =
+        b.status === "up"
+          ? "tt-dot tt-dot-up"
+          : b.status === "degraded"
+          ? "tt-dot tt-dot-degraded"
+          : b.status === "down"
+          ? "tt-dot tt-dot-down"
+          : "tt-dot tt-dot-none";
+      const checksLine =
+        b.status === "none"
+          ? `<div class="tt-row tt-muted">No checks recorded</div>`
+          : `<div class="tt-row"><span class="tt-key">Checks</span><span class="tt-val">${b.checks}</span></div>
+             <div class="tt-row"><span class="tt-key">Avg response</span><span class="tt-val">${b.avgResponseTime} ms</span></div>`;
+      const tip = `
+        <span class="bar-tip" role="tooltip">
+          <span class="tt-date">${escapeHtml(b.date)}</span>
+          <span class="tt-status"><span class="${dotCls}"></span>${escapeHtml(statusLabel)}</span>
+          ${checksLine}
+        </span>`;
+      return `<span class="${cls}" tabindex="0">${tip}</span>`;
+    })
+    .join("");
+  return `<div class="bars" aria-label="${escapeHtml(ariaLabel)}">${inner}</div>`;
+}
+
 function escapeHtml(s) {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -256,7 +343,7 @@ function renderIncidentsSection(incidents) {
     </section>`;
 }
 
-function renderHtml({ config, sites, overall, incidents, generatedAt }) {
+function renderHtml({ config, sites, overall, incidents, generatedAt, modelsState }) {
   const sw = config["status-website"] || {};
   const title = sw.name || "Status";
   const fav = sw.favicon || "";
@@ -301,6 +388,54 @@ function renderHtml({ config, sites, overall, incidents, generatedAt }) {
     return `${fmt(past)} – ${fmt(now)}`;
   })();
 
+  // ---- Server-rendered models tiles (live JS will hydrate the dot/state/detail) ----
+  const recordedWorkers = (modelsState && modelsState.workers) || {};
+  const sortedWorkerKeys = Object.keys(recordedWorkers).sort((a, b) =>
+    a.localeCompare(b)
+  );
+  const modelsTilesHtml = sortedWorkerKeys
+    .map((key) => {
+      const w = recordedWorkers[key];
+      const buckets = modelBuckets(w, HISTORY_DAYS);
+      const pct = uptimePercent(buckets);
+      const todays = buckets[buckets.length - 1];
+      // Initial server-rendered state: derive from today's bucket so tile isn't
+      // blank before live JS hydrates. Live JS overrides this within seconds.
+      const initStatus =
+        todays && todays.status !== "none" ? todays.status : "ok";
+      const stateClass =
+        initStatus === "down"
+          ? "down"
+          : initStatus === "degraded"
+          ? "suspended"
+          : "ok";
+      const stateLabel =
+        initStatus === "down"
+          ? "Down"
+          : initStatus === "degraded"
+          ? "Idle"
+          : "Operational";
+      const barsHtml = renderBars(buckets, `${HISTORY_DAYS} day history for ${key}`);
+      return `
+        <div class="worker-tile" data-worker="${escapeHtml(key)}">
+          <div class="worker-row ${stateClass}" data-tile-row>
+            <span class="worker-dot ${stateClass}" data-tile-dot aria-hidden="true"></span>
+            <span class="worker-name">${escapeHtml(key)}</span>
+            <span class="worker-state" data-tile-state>${escapeHtml(stateLabel)}</span>
+            <span class="worker-detail" data-tile-detail>${
+              pct == null ? "" : escapeHtml(fmtPct(pct) + " uptime")
+            }</span>
+          </div>
+          ${barsHtml}
+        </div>`;
+    })
+    .join("");
+
+  const modelsLastUpdatedAttr =
+    modelsState && modelsState.updated_at
+      ? ` data-recorded-at="${modelsState.updated_at}"`
+      : "";
+
   const sitesHtml = sites
     .map((s) => {
       const dotCls =
@@ -312,46 +447,10 @@ function renderHtml({ config, sites, overall, incidents, generatedAt }) {
           ? "dot dot-up"
           : "dot dot-unknown";
 
-      const bars = s.history
-        .map((b) => {
-          const cls =
-            b.status === "down"
-              ? "bar bar-down"
-              : b.status === "degraded"
-              ? "bar bar-degraded"
-              : b.status === "up"
-              ? "bar bar-up"
-              : "bar bar-none";
-          const statusLabel =
-            b.status === "up"
-              ? "Operational"
-              : b.status === "degraded"
-              ? "Degraded"
-              : b.status === "down"
-              ? "Outage"
-              : "No data";
-          const dotCls =
-            b.status === "up"
-              ? "tt-dot tt-dot-up"
-              : b.status === "degraded"
-              ? "tt-dot tt-dot-degraded"
-              : b.status === "down"
-              ? "tt-dot tt-dot-down"
-              : "tt-dot tt-dot-none";
-          const checksLine =
-            b.status === "none"
-              ? `<div class="tt-row tt-muted">No checks recorded</div>`
-              : `<div class="tt-row"><span class="tt-key">Checks</span><span class="tt-val">${b.checks}</span></div>
-                 <div class="tt-row"><span class="tt-key">Avg response</span><span class="tt-val">${b.avgResponseTime} ms</span></div>`;
-          const tip = `
-            <span class="bar-tip" role="tooltip">
-              <span class="tt-date">${escapeHtml(b.date)}</span>
-              <span class="tt-status"><span class="${dotCls}"></span>${escapeHtml(statusLabel)}</span>
-              ${checksLine}
-            </span>`;
-          return `<span class="${cls}" tabindex="0">${tip}</span>`;
-        })
-        .join("");
+      const barsHtml = renderBars(
+        s.history,
+        `${HISTORY_DAYS} day uptime history for ${s.name}`
+      );
 
       return `
         <div class="service">
@@ -362,7 +461,7 @@ function renderHtml({ config, sites, overall, incidents, generatedAt }) {
             </div>
             <div class="service-uptime">${fmtPct(s.uptimePercent)} uptime</div>
           </div>
-          <div class="bars" aria-label="${HISTORY_DAYS} day uptime history for ${escapeHtml(s.name)}">${bars}</div>
+          ${barsHtml}
           <div class="bars-axis">
             <span>${HISTORY_DAYS} days ago</span>
             <span>Today</span>
@@ -732,17 +831,23 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   }
   .workers-refresh:hover:not(:disabled) { border-color: #0a7cff; color: #4a9bff; }
   .workers-refresh:disabled { opacity: 0.5; cursor: wait; }
-  .workers-grid { display: flex; flex-direction: column; }
+  .workers-grid { display: flex; flex-direction: column; gap: 14px; }
+  .worker-tile {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px solid #0e1a31;
+  }
+  .worker-tile:last-child { border-bottom: 0; padding-bottom: 0; }
+  .worker-tile .bars { height: 14px; margin-top: 2px; }
+  .models-axis { margin-top: 14px; }
   .worker-row {
     display: grid;
     grid-template-columns: 16px 1fr auto auto;
     align-items: center;
     gap: 12px;
-    padding: 11px 0;
-    border-bottom: 1px solid #0e1a31;
+    padding: 0;
     font-size: 0.9rem;
   }
-  .worker-row:last-child { border-bottom: 0; }
   .worker-dot {
     width: 8px; height: 8px; border-radius: 50%;
     margin-left: 4px;
@@ -908,7 +1013,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     ${sitesHtml}
   </section>
 
-  <section class="card" id="workersCard">
+  <section class="card" id="workersCard"${modelsLastUpdatedAttr}>
     <div class="card-header">
       <span>Models</span>
       <span class="card-range" id="workersUpdated">Loading…</span>
@@ -923,8 +1028,14 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       <span>of <strong id="wmTotal">0</strong> total</span>
       <button type="button" class="workers-refresh" id="wmRefresh" title="Force a fresh probe">Refresh</button>
     </div>
-    <div class="workers-grid" id="workersGrid">
-      <div class="workers-loading">Fetching live worker status…</div>
+    <div class="workers-grid" id="workersGrid">${
+      modelsTilesHtml
+        ? modelsTilesHtml
+        : '<div class="workers-loading">Fetching live worker status…</div>'
+    }</div>
+    <div class="bars-axis models-axis">
+      <span>${HISTORY_DAYS} days ago</span>
+      <span>Today</span>
     </div>
   </section>
 
@@ -1031,40 +1142,97 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       if(lastChecked && updated) updated.textContent = 'Updated ' + ageText(lastChecked);
     }
 
-    function rowsFromData(data){
-      var workers = data.workers || {};
-      var keys = Object.keys(workers).sort(function(a,b){ return a.localeCompare(b); });
-      if(keys.length === 0){
-        return '<div class="workers-loading">No workers reported.</div>';
+    function attrSelectorEscape(s){
+      // CSS attribute selector value escaping
+      return String(s).replace(/(['"\\\\])/g, '\\\\$1');
+    }
+
+    function tileLiveDetail(st, w){
+      if(st === 'ok' && typeof w.latency_ms === 'number') return w.latency_ms + ' ms';
+      if(st === 'suspended') return w.info || 'Scaled to zero';
+      if(st === 'down') return w.error || 'Unreachable';
+      return '';
+    }
+
+    function tileTitle(name, w){
+      var title = '';
+      if(Array.isArray(w.models) && w.models.length){
+        title = 'Models: ' + w.models.join(', ');
       }
-      return keys.map(function(name){
-        var w = workers[name] || {};
-        var st = w.status === 'ok' || w.status === 'suspended' || w.status === 'down' ? w.status : 'down';
-        var label = st === 'ok' ? 'Operational' : st === 'suspended' ? 'Idle' : 'Down';
-        var detail = '';
-        if(st === 'ok' && typeof w.latency_ms === 'number') detail = w.latency_ms + ' ms';
-        else if(st === 'suspended') detail = w.info || 'Scaled to zero';
-        else if(st === 'down') detail = w.error || 'Unreachable';
-        var title = '';
-        if(Array.isArray(w.models) && w.models.length){
-          title = 'Models: ' + w.models.join(', ');
-        }
-        if(w.machines){
-          var mparts = [];
-          for(var k in w.machines){ if(Object.prototype.hasOwnProperty.call(w.machines,k)) mparts.push(w.machines[k]+' '+k); }
-          if(mparts.length) title += (title ? ' · ' : '') + 'Machines: ' + mparts.join(', ');
-        }
-        return '<div class="worker-row ' + esc(st) + '" title="' + esc(title) + '">' +
-          '<span class="worker-dot ' + esc(st) + '" aria-hidden="true"></span>' +
+      if(w.machines){
+        var mparts = [];
+        for(var k in w.machines){ if(Object.prototype.hasOwnProperty.call(w.machines,k)) mparts.push(w.machines[k]+' '+k); }
+        if(mparts.length) title += (title ? ' · ' : '') + 'Machines: ' + mparts.join(', ');
+      }
+      return title;
+    }
+
+    function createTile(name, w, st, label){
+      // New worker (no historical bars yet) — inserted at sorted position.
+      var el = document.createElement('div');
+      el.className = 'worker-tile';
+      el.setAttribute('data-worker', name);
+      el.innerHTML =
+        '<div class="worker-row ' + esc(st) + '" data-tile-row title="' + esc(tileTitle(name, w)) + '">' +
+          '<span class="worker-dot ' + esc(st) + '" data-tile-dot aria-hidden="true"></span>' +
           '<span class="worker-name">' + esc(name) + '</span>' +
-          '<span class="worker-state">' + esc(label) + '</span>' +
-          '<span class="worker-detail">' + esc(detail) + '</span>' +
-          '</div>';
-      }).join('');
+          '<span class="worker-state" data-tile-state>' + esc(label) + '</span>' +
+          '<span class="worker-detail" data-tile-detail>' + esc(tileLiveDetail(st, w)) + '</span>' +
+        '</div>';
+      return el;
+    }
+
+    function applyTile(tile, name, w){
+      var st = w.status === 'ok' || w.status === 'suspended' || w.status === 'down' ? w.status : 'down';
+      var label = st === 'ok' ? 'Operational' : st === 'suspended' ? 'Idle' : 'Down';
+      var row = tile.querySelector('[data-tile-row]');
+      var dot = tile.querySelector('[data-tile-dot]');
+      var stateEl = tile.querySelector('[data-tile-state]');
+      var detailEl = tile.querySelector('[data-tile-detail]');
+      if(row){
+        row.classList.remove('ok','suspended','down');
+        row.classList.add(st);
+        row.setAttribute('title', tileTitle(name, w));
+      }
+      if(dot){
+        dot.classList.remove('ok','suspended','down');
+        dot.classList.add(st);
+      }
+      if(stateEl) stateEl.textContent = label;
+      if(detailEl) detailEl.textContent = tileLiveDetail(st, w);
+    }
+
+    function insertTileSorted(tile, name){
+      var existing = grid.querySelectorAll('.worker-tile');
+      for(var i = 0; i < existing.length; i++){
+        var k = existing[i].getAttribute('data-worker') || '';
+        if(name.localeCompare(k) < 0){
+          grid.insertBefore(tile, existing[i]);
+          return;
+        }
+      }
+      grid.appendChild(tile);
     }
 
     function render(data){
-      grid.innerHTML = rowsFromData(data);
+      var workers = data.workers || {};
+      var keys = Object.keys(workers);
+      var loader = grid.querySelector('.workers-loading');
+      if(loader) loader.remove();
+      for(var i = 0; i < keys.length; i++){
+        var name = keys[i];
+        var w = workers[name] || {};
+        var st = w.status === 'ok' || w.status === 'suspended' || w.status === 'down' ? w.status : 'down';
+        var label = st === 'ok' ? 'Operational' : st === 'suspended' ? 'Idle' : 'Down';
+        var sel = '[data-worker="' + attrSelectorEscape(name) + '"]';
+        var tile = grid.querySelector(sel);
+        if(tile){
+          applyTile(tile, name, w);
+        } else {
+          tile = createTile(name, w, st, label);
+          insertTileSorted(tile, name);
+        }
+      }
       if(meta) meta.hidden = false;
       var up = data.workers_up || 0;
       var idle = data.workers_suspended || 0;
@@ -1077,7 +1245,11 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     }
 
     function showError(msg){
-      grid.innerHTML = '<div class="workers-error">' + esc(msg || 'Could not fetch worker status.') + '</div>';
+      // Don't wipe historical bars on a transient fetch error — only show
+      // an inline notice if no tiles have been rendered at all.
+      if(!grid.querySelector('.worker-tile')){
+        grid.innerHTML = '<div class="workers-error">' + esc(msg || 'Could not fetch worker status.') + '</div>';
+      }
     }
 
     function load(force){
@@ -1241,8 +1413,9 @@ function main() {
   const incidents = loadIncidents(config.owner, config.repo);
   const overall = overallStatus(sites);
   const generatedAt = new Date().toISOString();
+  const modelsState = readModelsState();
 
-  const html = renderHtml({ config, sites, overall, incidents, generatedAt });
+  const html = renderHtml({ config, sites, overall, incidents, generatedAt, modelsState });
 
   if (!existsSync(OUT)) mkdirSync(OUT, { recursive: true });
   writeFileSync(join(OUT, "index.html"), html);

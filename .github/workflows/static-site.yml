@@ -7,7 +7,11 @@ on:
       - main
       - master
   workflow_run:
-    workflows: ["Uptime CI", "Response Time CI", "Summary CI"]
+    workflows:
+      - "Uptime CI"
+      - "Response Time CI"
+      - "Summary CI"
+      - "Models History CI"
     types: [completed]
   repository_dispatch:
     types: [static_site]

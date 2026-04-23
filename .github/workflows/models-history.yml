@@ -1,0 +1,53 @@
+name: Models History CI
+on:
+  schedule:
+    # Every 5 minutes (best-effort, GitHub may delay on free tier)
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+# Prevent overlapping runs from racing on the state file
+concurrency:
+  group: models-history
+  cancel-in-progress: false
+
+jobs:
+  record:
+    name: Record models snapshot
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Record sample
+        run: node scripts/record-models.mjs
+
+      - name: Commit if changed
+        run: |
+          git config user.name "Upptime Bot"
+          git config user.email "73812536+upptime-bot@users.noreply.github.com"
+          if git diff --quiet -- history/models-state.json; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          # Pull --rebase to avoid races with the every-5-min Uptime CI commits
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git add history/models-state.json
+          git commit -m "📊 Record models snapshot [skip ci]"
+          # Retry push a few times in case of concurrent commits
+          for i in 1 2 3; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Pushed on attempt $i"
+              exit 0
+            fi
+            echo "Push failed, rebasing and retrying..."
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          done
+          echo "Push failed after retries"
+          exit 1
