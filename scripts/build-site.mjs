@@ -271,50 +271,6 @@ function fmtPct(n) {
   return `${n.toFixed(2)}%`;
 }
 
-// Build a changelog from git history of meaningful (non-monitoring) paths.
-// Returns newest first: { sha, shortSha, date, subject, body, url }.
-function loadChangelog(owner, repo, limit = 100) {
-  const paths = [
-    ".upptimerc.yml",
-    "scripts/",
-    "assets/",
-    "README.md",
-    ".github/",
-    "package.json",
-    "package-lock.json",
-    "CHANGELOG.md",
-  ];
-  let log;
-  try {
-    log = execSync(
-      `git log -n ${limit} --no-merges --pretty=format:"%H%x1f%cI%x1f%s%x1f%b%x1e" -- ${paths.join(" ")}`,
-      { cwd: ROOT, encoding: "utf8" }
-    );
-  } catch {
-    return [];
-  }
-  const records = log.split("\x1e").map((r) => r.trim()).filter(Boolean);
-  const out = [];
-  for (const rec of records) {
-    const [sha, date, subject, body = ""] = rec.split("\x1f");
-    if (!sha || !subject) continue;
-    // Skip noisy automated commits.
-    if (/^\s*🍱?\s*Update summary/i.test(subject)) continue;
-    if (/^\s*📝?\s*Update summary/i.test(subject)) continue;
-    if (/^\s*🟩?\s*\d+ \w+ Operational/i.test(subject)) continue;
-    if (/^\s*🟥?\s*\d+ \w+ Down/i.test(subject)) continue;
-    out.push({
-      sha,
-      shortSha: sha.slice(0, 7),
-      date,
-      subject,
-      body: body.trim(),
-      url: `https://github.com/${owner}/${repo}/commit/${sha}`,
-    });
-  }
-  return out;
-}
-
 function buildSitePayload(config) {
   const sites = (config.sites || []).map((s) => {
     const slug = s.slug || slugify(s.name);
@@ -1101,7 +1057,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 
   <footer>
     <span>Last updated ${escapeHtml(new Date(generatedAt).toUTCString())}</span>
-    <span><a href="/changelog.html">Changelog</a> · © ${new Date().getUTCFullYear()} EmpirioLabs AI</span>
+    <span>© ${new Date().getUTCFullYear()} EmpirioLabs AI</span>
   </footer>
 </div>
 
@@ -1436,163 +1392,6 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 </html>`;
 }
 
-function renderChangelogHtml({ config, entries, generatedAt }) {
-  const sw = config["status-website"] || {};
-  const title = sw.name || "Status";
-  const fav = sw.favicon || "";
-  const logo = sw.logoUrl || "";
-
-  // Group entries by YYYY-MM-DD.
-  const groups = new Map();
-  for (const e of entries) {
-    const ymd = e.date.slice(0, 10);
-    if (!groups.has(ymd)) groups.set(ymd, []);
-    groups.get(ymd).push(e);
-  }
-
-  const fmtDay = (ymd) => {
-    const d = new Date(ymd + "T00:00:00Z");
-    return d.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  };
-
-  const sections = [...groups.entries()]
-    .map(([ymd, list]) => {
-      const items = list
-        .map((e) => {
-          const bodyHtml = e.body
-            ? `<p class="cl-body">${escapeHtml(e.body).replace(/\n/g, "<br/>")}</p>`
-            : "";
-          return `
-        <li class="cl-entry">
-          <div class="cl-head">
-            <a class="cl-sha" href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${escapeHtml(e.shortSha)}</a>
-            <span class="cl-subject">${escapeHtml(e.subject)}</span>
-          </div>
-          ${bodyHtml}
-        </li>`;
-        })
-        .join("");
-      return `
-      <section class="card">
-        <div class="card-header">
-          <span>${escapeHtml(fmtDay(ymd))}</span>
-          <span class="card-range">${list.length} change${list.length === 1 ? "" : "s"}</span>
-        </div>
-        <ul class="cl-list">${items}</ul>
-      </section>`;
-    })
-    .join("");
-
-  const empty = entries.length
-    ? ""
-    : `<section class="card"><div class="empty">No changes recorded yet.</div></section>`;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${escapeHtml(title)} Changelog</title>
-<meta name="description" content="Changelog for the ${escapeHtml(title)} status page." />
-<meta name="theme-color" content="#000815" />
-<meta name="color-scheme" content="dark" />
-${fav ? `<link rel="icon" href="${escapeHtml(fav)}" />` : ""}
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-<style>
-  *,*::before,*::after { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0;
-    background: #000815;
-    color: #e6edf6;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    letter-spacing: -0.005em;
-  }
-  a { color: #4a9bff; text-decoration: none; }
-  a:hover { color: #66adff; }
-  .page { max-width: 880px; margin: 0 auto; padding: 56px 24px 80px; }
-  header.top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
-  .brand a { display: inline-flex; align-items: center; color: inherit; }
-  .brand img { height: 44px; width: auto; display: block; }
-  .back {
-    display: inline-flex; align-items: center; gap: 6px;
-    color: #a8b3c7; font-size: 0.875rem; font-weight: 500;
-    padding: 8px 14px; border: 1px solid #14233f; border-radius: 8px;
-    transition: border-color 120ms ease, color 120ms ease;
-  }
-  .back:hover { border-color: #0a7cff; color: #fff; }
-  h1 { font-size: 1.5rem; margin: 0 0 8px; font-weight: 600; }
-  .lede { color: #a8b3c7; font-size: 0.95rem; margin: 0 0 24px; }
-  .card {
-    border: 1px solid #14233f; border-radius: 12px;
-    background: #060f22; padding: 20px; margin-bottom: 16px;
-  }
-  .card-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px; font-weight: 600; font-size: 1rem;
-  }
-  .card-range { color: #6b7790; font-size: 0.85rem; font-weight: 500; }
-  .cl-list { list-style: none; padding: 0; margin: 0; }
-  .cl-entry { padding: 12px 0; border-bottom: 1px solid #0e1a31; }
-  .cl-entry:last-child { border-bottom: 0; padding-bottom: 0; }
-  .cl-entry:first-child { padding-top: 0; }
-  .cl-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .cl-sha {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.78rem;
-    color: #6b7790;
-    background: #0a1530;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid #14233f;
-  }
-  .cl-sha:hover { color: #4a9bff; border-color: #0a7cff; }
-  .cl-subject { color: #e6edf6; font-size: 0.95rem; font-weight: 500; }
-  .cl-body { color: #a8b3c7; font-size: 0.85rem; margin: 6px 0 0; line-height: 1.55; }
-  .empty { color: #6b7790; font-size: 0.9rem; padding: 4px 0; }
-  footer {
-    margin-top: 32px; color: #5a6680; font-size: 0.8rem;
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 16px; flex-wrap: wrap;
-  }
-  footer a { color: #6b7790; }
-  @media (max-width: 600px) { .page { padding: 32px 16px 56px; } }
-</style>
-</head>
-<body>
-<div class="page">
-  <header class="top">
-    <div class="brand">
-      <a href="/" aria-label="${escapeHtml(title)} status home">
-        ${logo ? `<img src="${escapeHtml(logo)}" alt="${escapeHtml(title)}" />` : escapeHtml(title)}
-      </a>
-    </div>
-    <a class="back" href="/">← Back to status</a>
-  </header>
-
-  <h1>Changelog</h1>
-  <p class="lede">Recent changes to the ${escapeHtml(title)} status page and monitoring configuration. Sourced from the <a href="https://github.com/${config.owner}/${config.repo}/commits/main" target="_blank" rel="noopener">main branch</a>.</p>
-
-  ${sections}
-  ${empty}
-
-  <footer>
-    <span>Last updated ${escapeHtml(new Date(generatedAt).toUTCString())}</span>
-    <span><a href="/">Status</a> · © ${new Date().getUTCFullYear()} EmpirioLabs AI</span>
-  </footer>
-</div>
-</body>
-</html>`;
-}
-
 function buildAtomFeed({ config, incidents, generatedAt }) {
   const sw = config["status-website"] || {};
   const cname = sw.cname;
@@ -1639,13 +1438,6 @@ function main() {
   if (!existsSync(OUT)) mkdirSync(OUT, { recursive: true });
   writeFileSync(join(OUT, "index.html"), html);
   writeFileSync(join(OUT, "feed.xml"), buildAtomFeed({ config, incidents, generatedAt }));
-
-  // Changelog page sourced from git history.
-  const changelogEntries = loadChangelog(config.owner, config.repo);
-  writeFileSync(
-    join(OUT, "changelog.html"),
-    renderChangelogHtml({ config, entries: changelogEntries, generatedAt })
-  );
 
   // CNAME for custom domain
   const cname = (config["status-website"] || {}).cname;
