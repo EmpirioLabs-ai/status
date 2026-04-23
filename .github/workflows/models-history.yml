@@ -1,11 +1,5 @@
 name: Models History CI
 on:
-  workflow_run:
-    # Piggyback on the built-in Upptime scheduler instead of relying on a
-    # second independent cron. Uptime CI is the cadence source of truth.
-    workflows:
-      - "Uptime CI"
-    types: [completed]
   workflow_dispatch:
 
 # Prevent overlapping runs from racing on the state file
@@ -16,7 +10,6 @@ concurrency:
 jobs:
   record:
     name: Record models snapshot
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     env:

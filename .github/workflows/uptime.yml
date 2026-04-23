@@ -5,14 +5,53 @@ on:
   repository_dispatch:
     types: [uptime]
   workflow_dispatch:
+
+concurrency:
+  group: uptime-ci
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Check status of all endpoints
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - uses: upptime/uptime-monitor@master
         with:
           command: "update"
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
+      - name: Refresh custom status snapshots
+        run: |
+          node scripts/record-sites.mjs
+          node scripts/record-models.mjs
+      - name: Commit custom snapshots if changed
+        run: |
+          git config user.name "Upptime Bot"
+          git config user.email "73812536+upptime-bot@users.noreply.github.com"
+          if git diff --quiet -- history/sites-state.json history/models-state.json; then
+            echo "No custom snapshot changes to commit."
+            exit 0
+          fi
+          git add history/sites-state.json history/models-state.json
+          git commit -m "📊 Record custom status snapshots [skip ci]"
+          for i in 1 2 3; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Pushed on attempt $i"
+              exit 0
+            fi
+            echo "Push failed, rebasing and retrying..."
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          done
+          echo "Push failed after retries"
+          exit 1
