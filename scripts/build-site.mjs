@@ -144,6 +144,58 @@ function uptimePercent(buckets) {
   return (upish / measured.length) * 100;
 }
 
+// ---- Sites state (history/sites-state.json) ----
+// Mirrors the models-state.json shape but per-site. Populated by
+// scripts/record-sites.mjs on a */5 cron. We prefer this over git-log
+// derived history because the upstream upptime-monitor commits very
+// unreliably on free-tier cron, leaving most days as "No data".
+function readSitesState() {
+  const p = join(ROOT, "history", "sites-state.json");
+  if (!existsSync(p)) return null;
+  try {
+    const raw = JSON.parse(readFileSync(p, "utf8"));
+    return {
+      sites: raw.sites || {},
+      updated_at: raw.updated_at || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Convert a single site's recorded buckets into the 90-day bars shape.
+// Same renderer contract as modelBuckets / bucketByDay so renderBars works.
+function siteBucketsFromState(siteEntry, days = HISTORY_DAYS) {
+  const recorded = (siteEntry && siteEntry.buckets) || {};
+  const out = [];
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    const ymd = d.toISOString().slice(0, 10);
+    const b = recorded[ymd];
+    if (!b || !b.checks) {
+      out.push({ date: ymd, status: "none", checks: 0, avgResponseTime: 0 });
+      continue;
+    }
+    let status;
+    if (b.down > 0 && b.up === 0) status = "down";
+    else if (b.down > 0 && b.up > 0) status = "degraded";
+    else status = "up";
+    const avg = b.lat_count > 0 ? Math.round(b.lat_sum / b.lat_count) : 0;
+    out.push({
+      date: ymd,
+      status,
+      checks: b.checks,
+      avgResponseTime: avg,
+      ok: b.up || 0,
+      down: b.down || 0,
+    });
+  }
+  return out;
+}
+
 // ---- Models state (history/models-state.json) ----
 function readModelsState() {
   const p = join(ROOT, "history", "models-state.json");
@@ -272,20 +324,43 @@ function fmtPct(n) {
 }
 
 function buildSitePayload(config) {
+  const sitesState = readSitesState();
   const sites = (config.sites || []).map((s) => {
     const slug = s.slug || slugify(s.name);
-    const current = readHistoryFile(slug);
-    const history = getHistory(slug, HISTORY_DAYS);
-    const buckets = bucketByDay(history, HISTORY_DAYS);
+    const stateEntry = sitesState && sitesState.sites[slug];
+
+    let status, code, responseTime, lastUpdated, buckets;
+    if (stateEntry) {
+      // Prefer the recorder-driven state file: it produces dense, reliable
+      // history regardless of how often the upstream upptime-monitor
+      // workflow actually fires.
+      buckets = siteBucketsFromState(stateEntry, HISTORY_DAYS);
+      status = stateEntry.last_status || "unknown";
+      code = stateEntry.last_code || 0;
+      responseTime = stateEntry.last_latency_ms || 0;
+      lastUpdated = stateEntry.last_seen
+        ? new Date(stateEntry.last_seen * 1000).toISOString()
+        : null;
+    } else {
+      // Legacy fallback: derive from per-file YAML + git log.
+      const current = readHistoryFile(slug);
+      const history = getHistory(slug, HISTORY_DAYS);
+      buckets = bucketByDay(history, HISTORY_DAYS);
+      status = current?.status || "unknown";
+      code = current?.code || 0;
+      responseTime = current?.responseTime || 0;
+      lastUpdated = current?.lastUpdated || null;
+    }
+
     const pct = uptimePercent(buckets);
     return {
       name: s.name,
       url: s.url,
       slug,
-      status: current?.status || "unknown",
-      code: current?.code || 0,
-      responseTime: current?.responseTime || 0,
-      lastUpdated: current?.lastUpdated || null,
+      status,
+      code,
+      responseTime,
+      lastUpdated,
       uptimePercent: pct,
       history: buckets,
     };

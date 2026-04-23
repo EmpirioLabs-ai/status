@@ -12,6 +12,7 @@ on:
       - "Response Time CI"
       - "Summary CI"
       - "Models History CI"
+      - "Sites History CI"
     types: [completed]
   repository_dispatch:
     types: [static_site]
