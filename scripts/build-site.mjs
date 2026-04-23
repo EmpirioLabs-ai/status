@@ -177,18 +177,12 @@ function modelBuckets(workerEntry, days = HISTORY_DAYS) {
     }
     let status;
     // Day-level rollup, in priority order:
-    //   down     — every sample failed (no successful check all day)
-    //   degraded — at least one success and at least one failure (often
-    //              cold-start timeouts on serverless platforms like Fly)
-    //   cold     — no failures, no successes, only suspended/cold samples
-    //              (worker never woke that day; expected on Fly scale-to-zero,
-    //              shouldn't occur on always-on platforms like Railway)
-    //   up       — at least one success, no failures
+    //   down     — every probe that day failed
+    //   degraded — at least one success and at least one failure
+    //   up       — worker was reachable (or healthy-but-dormant) all day
     if (b.down > 0 && b.ok === 0) status = "down";
     else if (b.down > 0 && b.ok > 0) status = "degraded";
-    else if (b.ok > 0) status = "up";
-    else if (b.suspended > 0) status = "cold";
-    else status = "none";
+    else status = "up";
     const avg = b.lat_count > 0 ? Math.round(b.lat_sum / b.lat_count) : 0;
     out.push({
       date: ymd,
@@ -197,7 +191,6 @@ function modelBuckets(workerEntry, days = HISTORY_DAYS) {
       avgResponseTime: avg,
       ok: b.ok || 0,
       down: b.down || 0,
-      suspended: b.suspended || 0,
     });
   }
   return out;
@@ -212,8 +205,6 @@ function renderBars(buckets, ariaLabel) {
           ? "bar bar-down"
           : b.status === "degraded"
           ? "bar bar-degraded"
-          : b.status === "cold"
-          ? "bar bar-cold"
           : b.status === "up"
           ? "bar bar-up"
           : "bar bar-none";
@@ -222,8 +213,6 @@ function renderBars(buckets, ariaLabel) {
           ? "Operational"
           : b.status === "degraded"
           ? "Partial outage"
-          : b.status === "cold"
-          ? "Idle (cold)"
           : b.status === "down"
           ? "Outage"
           : "No data";
@@ -232,12 +221,10 @@ function renderBars(buckets, ariaLabel) {
           ? "tt-dot tt-dot-up"
           : b.status === "degraded"
           ? "tt-dot tt-dot-degraded"
-          : b.status === "cold"
-          ? "tt-dot tt-dot-cold"
           : b.status === "down"
           ? "tt-dot tt-dot-down"
           : "tt-dot tt-dot-none";
-      // Build a checks/breakdown line. For mixed buckets show ok/down/cold split.
+      // Build a checks/breakdown line.
       let checksLine;
       if (b.status === "none") {
         checksLine = `<div class="tt-row tt-muted">No checks recorded</div>`;
@@ -245,7 +232,6 @@ function renderBars(buckets, ariaLabel) {
         const parts = [];
         if (b.ok) parts.push(`${b.ok} ok`);
         if (b.down) parts.push(`${b.down} failed`);
-        if (b.suspended) parts.push(`${b.suspended} cold`);
         const breakdown = parts.length > 1 ? parts.join(" · ") : null;
         const latLine =
           b.avgResponseTime > 0
@@ -738,11 +724,6 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     background: #ffc266;
     box-shadow: 0 0 12px rgba(255, 181, 71, 0.45);
   }
-  .bar-cold { background: #5db8ff; }
-  .bar-cold:hover, .bar-cold:focus-visible {
-    background: #7ac5ff;
-    box-shadow: 0 0 12px rgba(93, 184, 255, 0.45);
-  }
   .bar-down { background: #ff4d6a; }
   .bar-down:hover, .bar-down:focus-visible {
     background: #ff6b85;
@@ -814,7 +795,6 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   }
   .tt-dot-up { background: #1ed688; }
   .tt-dot-degraded { background: #ffb547; }
-  .tt-dot-cold { background: #5db8ff; }
   .tt-dot-down { background: #ff4d6a; }
   .tt-dot-none { background: #4a5568; }
   .tt-row {
@@ -1101,8 +1081,6 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     <div class="workers-meta" id="workersMeta" hidden>
       <span><strong id="wmUp">0</strong> operational</span>
       <span class="sep">·</span>
-      <span><strong id="wmIdle">0</strong> idle</span>
-      <span class="sep">·</span>
       <span><strong id="wmDown">0</strong> down</span>
       <span class="sep">·</span>
       <span>of <strong id="wmTotal">0</strong> total</span>
@@ -1227,39 +1205,26 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       return String(s).replace(/(['"\\\\])/g, '\\\\$1');
     }
 
-    function coldCount(w){
-      // Count non-running machines reported by the gateway (Fly.io exposes
-      // started/stopped/suspended; only "started" is warm). Anything else
-      // counts as a cold replica we should hint at in the live row.
-      if(!w || !w.machines) return 0;
-      var n = 0;
-      for(var k in w.machines){
-        if(!Object.prototype.hasOwnProperty.call(w.machines, k)) continue;
-        if(k !== 'started') n += Number(w.machines[k]) || 0;
-      }
-      return n;
+    // Map gateway status → visible status. Suspended/dormant replicas are a
+    // platform implementation detail (Fly scale-to-zero) and aren't an
+    // availability problem from the API consumer's perspective, so they
+    // collapse into 'ok'. On always-on platforms this branch never fires.
+    function visibleStatus(raw){
+      if(raw === 'down') return 'down';
+      return 'ok';
     }
 
     function tileLiveDetail(st, w){
-      var cold = coldCount(w);
-      var coldHint = cold > 0 ? ' \u00b7 \u2744 ' + cold + ' cold' : '';
-      if(st === 'ok' && typeof w.latency_ms === 'number') return w.latency_ms + ' ms' + coldHint;
-      if(st === 'suspended') return (w.info || 'Scaled to zero') + coldHint;
+      if(st === 'ok' && typeof w.latency_ms === 'number') return w.latency_ms + ' ms';
       if(st === 'down') return w.error || 'Unreachable';
       return '';
     }
 
     function tileTitle(name, w){
-      var title = '';
       if(Array.isArray(w.models) && w.models.length){
-        title = 'Models: ' + w.models.join(', ');
+        return 'Models: ' + w.models.join(', ');
       }
-      if(w.machines){
-        var mparts = [];
-        for(var k in w.machines){ if(Object.prototype.hasOwnProperty.call(w.machines,k)) mparts.push(w.machines[k]+' '+k); }
-        if(mparts.length) title += (title ? ' · ' : '') + 'Machines: ' + mparts.join(', ');
-      }
-      return title;
+      return '';
     }
 
     function createTile(name, w, st, label){
@@ -1278,8 +1243,8 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     }
 
     function applyTile(tile, name, w){
-      var st = w.status === 'ok' || w.status === 'suspended' || w.status === 'down' ? w.status : 'down';
-      var label = st === 'ok' ? 'Operational' : st === 'suspended' ? 'Idle' : 'Down';
+      var st = visibleStatus(w.status);
+      var label = st === 'ok' ? 'Operational' : 'Down';
       var row = tile.querySelector('[data-tile-row]');
       var dot = tile.querySelector('[data-tile-dot]');
       var stateEl = tile.querySelector('[data-tile-state]');
@@ -1317,8 +1282,8 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       for(var i = 0; i < keys.length; i++){
         var name = keys[i];
         var w = workers[name] || {};
-        var st = w.status === 'ok' || w.status === 'suspended' || w.status === 'down' ? w.status : 'down';
-        var label = st === 'ok' ? 'Operational' : st === 'suspended' ? 'Idle' : 'Down';
+        var st = visibleStatus(w.status);
+        var label = st === 'ok' ? 'Operational' : 'Down';
         var sel = '[data-worker="' + attrSelectorEscape(name) + '"]';
         var tile = grid.querySelector(sel);
         if(tile){
@@ -1329,12 +1294,14 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
         }
       }
       if(meta) meta.hidden = false;
-      var up = data.workers_up || 0;
-      var idle = data.workers_suspended || 0;
+      // Roll suspended into operational — we don't surface the cold/idle
+      // distinction to viewers (it's a platform detail, not an availability
+      // signal). Future always-on platforms will return suspended=0 anyway.
+      var up = (data.workers_up || 0) + (data.workers_suspended || 0);
       var down = data.workers_down || 0;
-      var total = data.workers_total || (up + idle + down);
+      var total = data.workers_total || (up + down);
       var n = function(id, v){ var el = document.getElementById(id); if(el) el.textContent = v; };
-      n('wmUp', up); n('wmIdle', idle); n('wmDown', down); n('wmTotal', total);
+      n('wmUp', up); n('wmDown', down); n('wmTotal', total);
       lastChecked = data.checked_at != null ? data.checked_at : Date.now();
       tickAge();
     }
