@@ -1,10 +1,11 @@
 name: Models History CI
 on:
   schedule:
-    # Run every 15 minutes, offset away from the top of the hour where GitHub
-    # Actions is most congested. Each run takes 10 samples internally, so the
-    # page still shows dense per-day check counts without overlapping runs.
-    - cron: "7,22,37,52 * * * *"
+    # Standard Upptime-style cadence: attempt a check every 5 minutes, but
+    # offset away from :00 where GitHub says schedule load is highest.
+    # GitHub-hosted schedules are still best-effort, so some runs may land
+    # late, but each completed run contributes one real check to the page.
+    - cron: "2/5 * * * *"
   workflow_dispatch:
 
 # Prevent overlapping runs from racing on the state file
@@ -16,13 +17,11 @@ jobs:
   record:
     name: Record models snapshot
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     env:
-      # 10 checks over ~5 minutes per run. With a 15-minute schedule, this
-      # yields ~960 checks/day when GitHub runs on time, and still preserves
-      # useful counts when scheduled runs are delayed.
-      SAMPLES_PER_RUN: "10"
-      SAMPLE_INTERVAL_SECONDS: "30"
+      # Keep one sample per workflow run so the check count shown on the page
+      # directly reflects how many scheduled runs actually executed.
+      SAMPLES_PER_RUN: "1"
     permissions:
       contents: write
     steps:

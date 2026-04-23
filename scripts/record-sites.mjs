@@ -53,14 +53,11 @@ const STATE_FILE = join(HISTORY_DIR, "sites-state.json");
 const CONFIG_FILE = join(ROOT, ".upptimerc.yml");
 const HISTORY_DAYS = Number(process.env.HISTORY_DAYS || 90);
 const FETCH_TIMEOUT_MS = Number(process.env.FETCH_TIMEOUT_MS || 15000);
-// In-run sampling loop. GitHub Actions scheduled cron is heavily throttled
-// (often firing every ~30–90 min instead of the requested */5), so a single
-// probe per workflow run leaves us with very few samples/day. Instead, take
-// SAMPLES_PER_RUN probes spaced SAMPLE_INTERVAL_SECONDS apart inside one run,
-// then commit a single batched state-file update at the end. With the defaults
-// (10 samples × 30s = ~5 min per run) we collect ~10 samples per cron firing,
-// which yields 100+ samples/day even when cron is sluggish.
-const SAMPLES_PER_RUN = Math.max(1, Number(process.env.SAMPLES_PER_RUN || 10));
+// Default to one sample per workflow run so the daily check count shown on the
+// page matches the number of completed scheduled runs. Workflows can override
+// SAMPLES_PER_RUN if a future self-hosted or externally triggered setup wants
+// burst sampling inside a single run.
+const SAMPLES_PER_RUN = Math.max(1, Number(process.env.SAMPLES_PER_RUN || 1));
 const SAMPLE_INTERVAL_SECONDS = Math.max(
   5,
   Number(process.env.SAMPLE_INTERVAL_SECONDS || 30)
