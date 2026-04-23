@@ -575,7 +575,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     z-index: 50;
   }
   .bar::before {
-    content: attr(data-date) '\A' attr(data-status) '\A' attr(data-detail);
+    content: attr(data-date) '\\A ' attr(data-status) '\\A ' attr(data-detail);
     white-space: pre;
     background: #0a1428;
     color: #e6ecff;
