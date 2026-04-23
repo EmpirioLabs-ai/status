@@ -1,11 +1,10 @@
 name: Sites History CI
 on:
   schedule:
-    # Cron is best-effort on GitHub Actions free tier (often delayed/skipped
-    # by 30–90 min). Each run takes multiple samples internally via
-    # SAMPLES_PER_RUN/SAMPLE_INTERVAL_SECONDS in record-sites.mjs, so the
-    # effective sample rate is much higher than this cron interval.
-    - cron: "*/5 * * * *"
+    # Run every 15 minutes, offset away from the top of the hour where GitHub
+    # Actions is most congested. Each run takes 10 samples internally, so the
+    # page still shows dense per-day check counts without overlapping runs.
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
 # Prevent overlapping runs from racing on the state file.
@@ -20,6 +19,12 @@ jobs:
     # Long enough for a full SAMPLES_PER_RUN × SAMPLE_INTERVAL_SECONDS loop
     # plus checkout/install/commit overhead. Default of 360 min is wasteful.
     timeout-minutes: 15
+    env:
+      # 10 checks over ~5 minutes per run. With a 15-minute schedule, this
+      # yields ~960 checks/day when GitHub runs on time, and still preserves
+      # useful counts when scheduled runs are delayed.
+      SAMPLES_PER_RUN: "10"
+      SAMPLE_INTERVAL_SECONDS: "30"
     permissions:
       contents: write
     steps:
