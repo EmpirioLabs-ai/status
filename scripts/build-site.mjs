@@ -1185,16 +1185,24 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 
     function createTile(name, w, st, label){
       // New worker (no historical bars yet) — inserted at sorted position.
+      // Render an empty bars strip with the same number of slots as the
+      // server-rendered tiles so the layout is identical. The recorder
+      // workflow will fill in real buckets on its next run.
       var el = document.createElement('div');
       el.className = 'worker-tile';
       el.setAttribute('data-worker', name);
+      var emptyBars = '';
+      for(var i = 0; i < ${HISTORY_DAYS}; i++){
+        emptyBars += '<span class="bar bar-none"></span>';
+      }
       el.innerHTML =
         '<div class="worker-row ' + esc(st) + '" data-tile-row title="' + esc(tileTitle(name, w)) + '">' +
           '<span class="worker-dot ' + esc(st) + '" data-tile-dot aria-hidden="true"></span>' +
           '<span class="worker-name">' + esc(name) + '</span>' +
           '<span class="worker-state" data-tile-state>' + esc(label) + '</span>' +
           '<span class="worker-detail" data-tile-detail>' + esc(tileLiveDetail(st, w)) + '</span>' +
-        '</div>';
+        '</div>' +
+        '<div class="bars" aria-label="' + esc(${HISTORY_DAYS} + ' day history for ' + name) + '">' + emptyBars + '</div>';
       return el;
     }
 
