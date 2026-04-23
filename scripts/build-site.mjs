@@ -322,11 +322,21 @@ function renderHtml({ config, sites, overall, incidents, generatedAt }) {
               : b.status === "up"
               ? "bar bar-up"
               : "bar bar-none";
-          const tip =
+          const statusLabel =
+            b.status === "up"
+              ? "Operational"
+              : b.status === "degraded"
+              ? "Degraded"
+              : b.status === "down"
+              ? "Outage"
+              : "No data";
+          const tipDate = escapeHtml(b.date);
+          const tipStatus = escapeHtml(statusLabel);
+          const tipDetail =
             b.status === "none"
-              ? `${b.date}: no data`
-              : `${b.date}: ${b.status} · ${b.checks} checks · avg ${b.avgResponseTime} ms`;
-          return `<span class="${cls}" title="${escapeHtml(tip)}"></span>`;
+              ? "No checks recorded"
+              : `${b.checks} check${b.checks === 1 ? "" : "s"} · avg ${b.avgResponseTime} ms`;
+          return `<span class="${cls}" tabindex="0" data-date="${tipDate}" data-status="${tipStatus}" data-detail="${escapeHtml(tipDetail)}"></span>`;
         })
         .join("");
 
@@ -511,13 +521,112 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     gap: 2px;
     height: 32px;
     margin-top: 4px;
+    /* Allow tooltips to escape vertically */
+    overflow: visible;
   }
-  .bar { display: block; border-radius: 2px; height: 100%; }
+  .bar {
+    display: block;
+    border-radius: 2px;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+    transition: transform 160ms cubic-bezier(.2,.8,.2,1),
+                filter 160ms ease,
+                background-color 160ms ease;
+    transform-origin: center;
+    will-change: transform;
+    outline: none;
+  }
+  .bar:hover, .bar:focus-visible {
+    transform: scaleY(1.18);
+    filter: brightness(1.15);
+    z-index: 5;
+  }
   .bar-up { background: #1ed688; }
-  .bar-up:hover { background: #36e09a; }
+  .bar-up:hover, .bar-up:focus-visible {
+    background: #36e09a;
+    box-shadow: 0 0 12px rgba(30, 214, 136, 0.45);
+  }
   .bar-degraded { background: #ffb547; }
+  .bar-degraded:hover, .bar-degraded:focus-visible {
+    background: #ffc266;
+    box-shadow: 0 0 12px rgba(255, 181, 71, 0.45);
+  }
   .bar-down { background: #ff4d6a; }
+  .bar-down:hover, .bar-down:focus-visible {
+    background: #ff6b85;
+    box-shadow: 0 0 12px rgba(255, 77, 106, 0.5);
+  }
   .bar-none { background: #14233f; }
+  .bar-none:hover, .bar-none:focus-visible {
+    background: #1c2e51;
+  }
+
+  /* Custom tooltip (replaces native browser title="") */
+  .bar::before,
+  .bar::after {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms cubic-bezier(.2,.8,.2,1);
+    transform: translate(-50%, 4px);
+    z-index: 50;
+  }
+  .bar::before {
+    content: attr(data-date) '\A' attr(data-status) '\A' attr(data-detail);
+    white-space: pre;
+    background: #0a1428;
+    color: #e6ecff;
+    border: 1px solid #1f2d4a;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    font-weight: 500;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    min-width: 150px;
+    text-align: left;
+  }
+  .bar::after {
+    content: '';
+    width: 0; height: 0;
+    bottom: calc(100% + 4px);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #0a1428;
+    filter: drop-shadow(0 1px 0 #1f2d4a);
+  }
+  .bar:hover::before,
+  .bar:hover::after,
+  .bar:focus-visible::before,
+  .bar:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  /* Edge bars: nudge tooltip in so it doesn't clip the card */
+  .bars .bar:nth-child(-n+5)::before,
+  .bars .bar:nth-child(-n+5)::after { left: 0; transform: translate(0, 4px); }
+  .bars .bar:nth-child(-n+5):hover::before,
+  .bars .bar:nth-child(-n+5):hover::after,
+  .bars .bar:nth-child(-n+5):focus-visible::before,
+  .bars .bar:nth-child(-n+5):focus-visible::after {
+    transform: translate(0, 0);
+  }
+  .bars .bar:nth-last-child(-n+5)::before,
+  .bars .bar:nth-last-child(-n+5)::after { left: auto; right: 0; transform: translate(0, 4px); }
+  .bars .bar:nth-last-child(-n+5):hover::before,
+  .bars .bar:nth-last-child(-n+5):hover::after,
+  .bars .bar:nth-last-child(-n+5):focus-visible::before,
+  .bars .bar:nth-last-child(-n+5):focus-visible::after {
+    transform: translate(0, 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bar { transition: none; }
+    .bar:hover, .bar:focus-visible { transform: none; }
+    .bar::before, .bar::after { transition: opacity 100ms ease; transform: translate(-50%, 0); }
+  }
 
   .bars-axis {
     display: flex; justify-content: space-between;
