@@ -31,11 +31,14 @@ jobs:
           command: "update"
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
-      - name: Refresh custom status snapshots
-        run: |
-          node scripts/record-sites.mjs
-          node scripts/record-models.mjs
+      - name: Record site snapshots
+        if: always()
+        run: node scripts/record-sites.mjs
+      - name: Record model snapshots
+        if: always()
+        run: node scripts/record-models.mjs
       - name: Commit custom snapshots if changed
+        if: always()
         run: |
           git config user.name "Upptime Bot"
           git config user.email "73812536+upptime-bot@users.noreply.github.com"
