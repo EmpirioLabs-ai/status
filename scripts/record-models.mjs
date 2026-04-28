@@ -43,7 +43,12 @@ const STATE_FILE = join(HISTORY_DIR, "models-state.json");
 const ENDPOINT =
   process.env.HEALTH_ENDPOINT || "https://api.empiriolabs.ai/health";
 const HISTORY_DAYS = Number(process.env.HISTORY_DAYS || 90);
-const FETCH_TIMEOUT_MS = 15000;
+const FETCH_TIMEOUT_MS = Number(process.env.FETCH_TIMEOUT_MS || 30000);
+const FETCH_RETRIES = Math.max(1, Number(process.env.FETCH_RETRIES || 3));
+const FETCH_RETRY_DELAY_MS = Math.max(
+  0,
+  Number(process.env.FETCH_RETRY_DELAY_MS || 2000)
+);
 // Default to one sample per workflow run so the daily check count shown on the
 // page matches the number of completed scheduled runs. Workflows can override
 // SAMPLES_PER_RUN if a future self-hosted or externally triggered setup wants
@@ -122,9 +127,36 @@ async function fetchHealth() {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
+  } catch (err) {
+    if (err && err.name === "AbortError") {
+      throw new Error(`timeout after ${FETCH_TIMEOUT_MS}ms`);
+    }
+    throw err;
   } finally {
     clearTimeout(t);
   }
+}
+
+function errorMessage(err) {
+  return err && err.message ? err.message : String(err);
+}
+
+async function fetchHealthWithRetries(sampleLabel) {
+  let lastError;
+  for (let attempt = 1; attempt <= FETCH_RETRIES; attempt++) {
+    try {
+      return await fetchHealth();
+    } catch (err) {
+      lastError = err;
+      console.error(
+        `[record-models] sample ${sampleLabel} fetch attempt ${attempt}/${FETCH_RETRIES} failed: ${errorMessage(err)}`
+      );
+      if (attempt < FETCH_RETRIES && FETCH_RETRY_DELAY_MS > 0) {
+        await sleep(FETCH_RETRY_DELAY_MS * attempt);
+      }
+    }
+  }
+  throw lastError;
 }
 
 function recordSample(state, data, nowUnix) {
@@ -183,6 +215,31 @@ function recordSample(state, data, nowUnix) {
   return seen.size;
 }
 
+function recordEndpointFailure(state, nowUnix) {
+  const day = utcDay(nowUnix);
+  const workers = Object.entries(state.workers || {});
+
+  for (const [, entry] of workers) {
+    entry.last_seen = nowUnix;
+    if (!entry.buckets[day]) {
+      entry.buckets[day] = {
+        checks: 0,
+        ok: 0,
+        suspended: 0,
+        down: 0,
+        lat_sum: 0,
+        lat_count: 0,
+      };
+    }
+    entry.buckets[day].checks += 1;
+    entry.buckets[day].down += 1;
+    trimBuckets(entry, nowUnix);
+  }
+
+  state.updated_at = nowUnix;
+  return workers.length;
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -196,10 +253,15 @@ async function main() {
   for (let i = 0; i < SAMPLES_PER_RUN; i++) {
     let data;
     try {
-      data = await fetchHealth();
+      data = await fetchHealthWithRetries(`${i + 1}/${SAMPLES_PER_RUN}`);
     } catch (err) {
+      const failedAt = Math.floor(Date.now() / 1000);
+      const recorded = recordEndpointFailure(state, failedAt);
+      totalSamples += 1;
+      lastSampleUnix = failedAt;
+      lastWorkerCount = recorded;
       console.error(
-        `[record-models] sample ${i + 1}/${SAMPLES_PER_RUN} fetch failed: ${err && err.message ? err.message : err}`
+        `[record-models] sample ${i + 1}/${SAMPLES_PER_RUN}: health endpoint unavailable after ${FETCH_RETRIES} attempts; recorded ${recorded} workers down (${errorMessage(err)})`
       );
       if (i < SAMPLES_PER_RUN - 1) await sleep(SAMPLE_INTERVAL_SECONDS * 1000);
       continue;
@@ -219,7 +281,13 @@ async function main() {
   }
 
   if (totalSamples === 0) {
-    throw new Error("all sample fetches failed in this run");
+    const failedAt = Math.floor(Date.now() / 1000);
+    lastWorkerCount = recordEndpointFailure(state, failedAt);
+    lastSampleUnix = failedAt;
+    totalSamples = 1;
+    console.error(
+      `[record-models] no health samples succeeded; recorded ${lastWorkerCount} workers down`
+    );
   }
 
   saveState(state);
