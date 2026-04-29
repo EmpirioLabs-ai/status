@@ -144,6 +144,14 @@ function uptimePercent(buckets) {
   return (upish / measured.length) * 100;
 }
 
+function uptimePercentByChecks(buckets) {
+  const measured = buckets.filter((b) => b.status !== "none" && b.checks > 0);
+  const totalChecks = measured.reduce((sum, b) => sum + (b.checks || 0), 0);
+  if (totalChecks === 0) return null;
+  const failedChecks = measured.reduce((sum, b) => sum + (b.down || 0), 0);
+  return ((totalChecks - failedChecks) / totalChecks) * 100;
+}
+
 // ---- Sites state (history/sites-state.json) ----
 // Mirrors the models-state.json shape but per-site. Populated by
 // scripts/record-sites.mjs on a */5 cron. We prefer this over git-log
@@ -546,7 +554,7 @@ function renderHtml({ config, sites, overall, incidents, generatedAt, modelsStat
     .map((key) => {
       const w = recordedWorkers[key];
       const buckets = modelBuckets(w, HISTORY_DAYS);
-      const pct = uptimePercent(buckets);
+      const pct = uptimePercentByChecks(buckets);
       const uptimeDetail = pct == null ? "" : `${fmtPct(pct)} uptime`;
       const todays = buckets[buckets.length - 1];
       // Server-rendered initial state is intentionally neutral — the live JS
