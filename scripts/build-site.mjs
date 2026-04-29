@@ -547,6 +547,7 @@ function renderHtml({ config, sites, overall, incidents, generatedAt, modelsStat
       const w = recordedWorkers[key];
       const buckets = modelBuckets(w, HISTORY_DAYS);
       const pct = uptimePercent(buckets);
+      const uptimeDetail = pct == null ? "" : `${fmtPct(pct)} uptime`;
       const todays = buckets[buckets.length - 1];
       // Server-rendered initial state is intentionally neutral — the live JS
       // poller hydrates the dot/state/detail with the gateway's current view
@@ -556,14 +557,12 @@ function renderHtml({ config, sites, overall, incidents, generatedAt, modelsStat
       const stateLabel = "Checking\u2026";
       const barsHtml = renderBars(buckets, `${HISTORY_DAYS} day history for ${key}`);
       return `
-        <div class="worker-tile" data-worker="${escapeHtml(key)}">
+        <div class="worker-tile" data-worker="${escapeHtml(key)}" data-uptime-detail="${escapeHtml(uptimeDetail)}">
           <div class="worker-row ${stateClass}" data-tile-row>
             <span class="worker-dot ${stateClass}" data-tile-dot aria-hidden="true"></span>
             <span class="worker-name">${escapeHtml(key)}</span>
             <span class="worker-state" data-tile-state>${escapeHtml(stateLabel)}</span>
-            <span class="worker-detail" data-tile-detail>${
-              pct == null ? "" : escapeHtml(fmtPct(pct) + " uptime")
-            }</span>
+            <span class="worker-detail" data-tile-detail>${escapeHtml(uptimeDetail)}</span>
           </div>
           ${barsHtml}
         </div>`;
@@ -1299,6 +1298,13 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       return '';
     }
 
+    function tileDetail(tile, st, w){
+      var uptimeDetail = tile ? (tile.getAttribute('data-uptime-detail') || '') : '';
+      var liveDetail = tileLiveDetail(st, w);
+      if(uptimeDetail && liveDetail) return uptimeDetail + ' · ' + liveDetail;
+      return uptimeDetail || liveDetail;
+    }
+
     function tileTitle(name, w){
       if(Array.isArray(w.models) && w.models.length){
         return 'Models: ' + w.models.join(', ');
@@ -1315,6 +1321,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       var el = document.createElement('div');
       el.className = 'worker-tile';
       el.setAttribute('data-worker', name);
+      el.setAttribute('data-uptime-detail', '');
       var emptyBars = '';
       // Build YYYY-MM-DD labels for the last N days, oldest first (matches
       // server-rendered ordering: leftmost = N days ago, rightmost = today).
@@ -1338,7 +1345,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
           '<span class="worker-dot ' + esc(st) + '" data-tile-dot aria-hidden="true"></span>' +
           '<span class="worker-name">' + esc(name) + '</span>' +
           '<span class="worker-state" data-tile-state>' + esc(label) + '</span>' +
-          '<span class="worker-detail" data-tile-detail>' + esc(tileLiveDetail(st, w)) + '</span>' +
+          '<span class="worker-detail" data-tile-detail>' + esc(tileDetail(el, st, w)) + '</span>' +
         '</div>' +
         '<div class="bars" aria-label="' + esc(${HISTORY_DAYS} + ' day history for ' + name) + '">' + emptyBars + '</div>';
       return el;
@@ -1361,7 +1368,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
         dot.classList.add(st);
       }
       if(stateEl) stateEl.textContent = label;
-      if(detailEl) detailEl.textContent = tileLiveDetail(st, w);
+      if(detailEl) detailEl.textContent = tileDetail(tile, st, w);
     }
 
     function insertTileSorted(tile, name){
