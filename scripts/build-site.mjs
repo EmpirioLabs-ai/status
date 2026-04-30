@@ -671,6 +671,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     transition: background 120ms ease;
   }
   .updates:hover { background: #2891ff; color: #fff; }
+  .updates-label-short { display: none; }
 
   /* subscribe popover */
   .sub-wrap { position: relative; }
@@ -1117,6 +1118,33 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 
   @media (max-width: 600px) {
     .page { padding: 32px 16px 56px; }
+    header.top {
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .brand img { height: 36px; max-width: 170px; object-fit: contain; }
+    .sub-wrap { flex: 0 0 auto; }
+    .updates {
+      gap: 6px;
+      padding: 8px 10px;
+      min-height: 38px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+    .updates-label-full { display: none; }
+    .updates-label-short { display: inline; }
+    .sub-pop {
+      position: fixed;
+      top: 76px;
+      left: 16px;
+      right: 16px;
+      width: auto;
+      max-height: calc(100vh - 92px);
+      overflow-y: auto;
+      padding: 14px;
+    }
+    .sub-pop a.option { min-height: 44px; }
     .bars { height: 28px; }
     .bars-axis { font-size: 0.68rem; }
   }
@@ -1133,7 +1161,8 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     <div class="sub-wrap">
       <button class="updates" id="subBtn" type="button" aria-haspopup="true" aria-expanded="false">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        Subscribe to updates
+        <span class="updates-label-full">Subscribe to updates</span>
+        <span class="updates-label-short" aria-hidden="true">Subscribe</span>
       </button>
       <div class="sub-pop" id="subPop" role="menu">
         <h4>Get notified</h4>
