@@ -100,12 +100,21 @@ function getHistory(slug, days = HISTORY_DAYS) {
 
 // Bucket points into per-day status (worst status wins).
 function bucketByDay(points, days = HISTORY_DAYS) {
-  const buckets = new Map(); // ymd -> {status, count, responseTimes:[]}
+  const buckets = new Map(); // ymd -> {status, count, responseTimes:[], ok, down}
   for (const p of points) {
     const ymd = p.date.slice(0, 10);
-    const cur = buckets.get(ymd) || { status: "up", count: 0, responseTimes: [] };
+    const cur =
+      buckets.get(ymd) || {
+        status: "up",
+        count: 0,
+        responseTimes: [],
+        ok: 0,
+        down: 0,
+      };
     cur.count += 1;
     cur.responseTimes.push(p.responseTime);
+    if (p.status === "up") cur.ok += 1;
+    else cur.down += 1;
     // priority: down > degraded > up
     if (p.status === "down") cur.status = "down";
     else if (p.status === "degraded" && cur.status !== "down") cur.status = "degraded";
@@ -129,6 +138,8 @@ function bucketByDay(points, days = HISTORY_DAYS) {
         status: b.status,
         checks: b.count,
         avgResponseTime: Math.round(avg),
+        ok: b.ok,
+        down: b.down,
       });
     } else {
       result.push({ date: ymd, status: "none", checks: 0, avgResponseTime: 0 });
@@ -138,17 +149,13 @@ function bucketByDay(points, days = HISTORY_DAYS) {
 }
 
 function uptimePercent(buckets) {
-  const measured = buckets.filter((b) => b.status !== "none");
-  if (measured.length === 0) return null;
-  const upish = measured.filter((b) => b.status !== "down").length;
-  return (upish / measured.length) * 100;
-}
-
-function uptimePercentByChecks(buckets) {
   const measured = buckets.filter((b) => b.status !== "none" && b.checks > 0);
   const totalChecks = measured.reduce((sum, b) => sum + (b.checks || 0), 0);
   if (totalChecks === 0) return null;
-  const failedChecks = measured.reduce((sum, b) => sum + (b.down || 0), 0);
+  const failedChecks = measured.reduce((sum, b) => {
+    if (typeof b.down === "number") return sum + b.down;
+    return sum + (b.status === "up" ? 0 : b.checks || 0);
+  }, 0);
   return ((totalChecks - failedChecks) / totalChecks) * 100;
 }
 
@@ -554,7 +561,7 @@ function renderHtml({ config, sites, overall, incidents, generatedAt, modelsStat
     .map((key) => {
       const w = recordedWorkers[key];
       const buckets = modelBuckets(w, HISTORY_DAYS);
-      const pct = uptimePercentByChecks(buckets);
+      const pct = uptimePercent(buckets);
       const uptimeDetail = pct == null ? "" : `${fmtPct(pct)} uptime`;
       const todays = buckets[buckets.length - 1];
       // Server-rendered initial state is intentionally neutral — the live JS
