@@ -308,6 +308,10 @@ function modelBuckets(workerEntry, days = HISTORY_DAYS) {
 }
 
 // Generate the inner HTML for a 90-bar history strip (reused by services + models).
+// Each bar carries its day data on data-* attributes; a single shared tooltip
+// (#barTip) is positioned/populated by JS on hover/focus/touch. This keeps the
+// HTML small enough for mobile browsers to render without hitting per-tab
+// memory limits and reloading the page.
 function renderBars(buckets, ariaLabel) {
   const inner = buckets
     .map((b) => {
@@ -319,50 +323,17 @@ function renderBars(buckets, ariaLabel) {
           : b.status === "up"
           ? "bar bar-up"
           : "bar bar-none";
-      const statusLabel =
-        b.status === "up"
-          ? "Operational"
-          : b.status === "degraded"
-          ? "Partial outage"
-          : b.status === "down"
-          ? "Outage"
-          : "No data";
-      const dotCls =
-        b.status === "up"
-          ? "tt-dot tt-dot-up"
-          : b.status === "degraded"
-          ? "tt-dot tt-dot-degraded"
-          : b.status === "down"
-          ? "tt-dot tt-dot-down"
-          : "tt-dot tt-dot-none";
-      // Build a checks/breakdown line.
-      let checksLine;
-      if (b.status === "none") {
-        checksLine = `<div class="tt-row tt-muted">No checks recorded</div>`;
-      } else {
-        const parts = [];
-        if (b.ok) parts.push(`${b.ok} ok`);
-        if (b.down) parts.push(`${b.down} failed`);
-        const breakdown = parts.length > 1 ? parts.join(" · ") : null;
-        const latLine =
-          b.avgResponseTime > 0
-            ? `<div class="tt-row"><span class="tt-key">Avg response</span><span class="tt-val">${b.avgResponseTime} ms</span></div>`
-            : "";
-        checksLine = `<div class="tt-row"><span class="tt-key">Checks</span><span class="tt-val">${b.checks}</span></div>
-             ${
-               breakdown
-                 ? `<div class="tt-row tt-muted"><span class="tt-key">Breakdown</span><span class="tt-val">${breakdown}</span></div>`
-                 : ""
-             }
-             ${latLine}`;
-      }
-      const tip = `
-        <span class="bar-tip" role="tooltip">
-          <span class="tt-date">${escapeHtml(b.date)}</span>
-          <span class="tt-status"><span class="${dotCls}"></span>${escapeHtml(statusLabel)}</span>
-          ${checksLine}
-        </span>`;
-      return `<span class="${cls}" tabindex="0">${tip}</span>`;
+      const attrs = [
+        `class="${cls}"`,
+        `tabindex="0"`,
+        `data-d="${escapeHtml(b.date)}"`,
+        `data-s="${escapeHtml(b.status)}"`,
+        `data-c="${b.checks || 0}"`,
+        `data-o="${b.ok || 0}"`,
+        `data-x="${b.down || 0}"`,
+        `data-r="${b.avgResponseTime || 0}"`,
+      ].join(" ");
+      return `<span ${attrs}></span>`;
     })
     .join("");
   return `<div class="bars" aria-label="${escapeHtml(ariaLabel)}">${inner}</div>`;
@@ -828,21 +799,22 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     background: #1c2e51;
   }
 
-  /* Custom tooltip (real HTML, not CSS attr() trick) */
+  /* Single shared bar tooltip (positioned by JS). Keeps DOM tiny on mobile. */
   .bar-tip {
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 10px);
-    transform: translate(-50%, 4px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, calc(-100% - 8px));
     opacity: 0;
     pointer-events: none;
-    transition: opacity 140ms ease, transform 140ms cubic-bezier(.2,.8,.2,1);
-    z-index: 50;
+    transition: opacity 140ms ease;
+    z-index: 60;
 
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 4px;
     min-width: 180px;
+    max-width: calc(100vw - 24px);
     padding: 10px 12px;
     background: #0a1428;
     color: #e6ecff;
@@ -855,22 +827,18 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
     white-space: nowrap;
   }
+  .bar-tip.show { display: flex; opacity: 1; }
   .bar-tip::after {
     content: '';
     position: absolute;
     top: 100%;
-    left: 50%;
+    left: var(--bar-tip-arrow, 50%);
     transform: translateX(-50%);
     width: 0; height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 6px solid #0a1428;
     filter: drop-shadow(0 1px 0 #1f2d4a);
-  }
-  .bar:hover .bar-tip,
-  .bar:focus-visible .bar-tip {
-    opacity: 1;
-    transform: translate(-50%, 0);
   }
   .tt-date {
     color: #8a96b3;
@@ -901,24 +869,10 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   .tt-val { color: #e6ecff; font-variant-numeric: tabular-nums; font-weight: 500; }
   .tt-muted { color: #8a96b3; font-style: italic; }
 
-  /* Edge bars: anchor tooltip to the side so it doesn't clip the card */
-  .bars .bar:nth-child(-n+5) .bar-tip { left: 0; transform: translate(0, 4px); }
-  .bars .bar:nth-child(-n+5):hover .bar-tip,
-  .bars .bar:nth-child(-n+5):focus-visible .bar-tip {
-    transform: translate(0, 0);
-  }
-  .bars .bar:nth-child(-n+5) .bar-tip::after { left: 12px; }
-  .bars .bar:nth-last-child(-n+5) .bar-tip { left: auto; right: 0; transform: translate(0, 4px); }
-  .bars .bar:nth-last-child(-n+5):hover .bar-tip,
-  .bars .bar:nth-last-child(-n+5):focus-visible .bar-tip {
-    transform: translate(0, 0);
-  }
-  .bars .bar:nth-last-child(-n+5) .bar-tip::after { left: auto; right: 12px; transform: none; }
-
   @media (prefers-reduced-motion: reduce) {
     .bar { transition: none; }
     .bar:hover, .bar:focus-visible { transform: none; }
-    .bar-tip { transition: opacity 100ms ease; transform: translate(-50%, 0); }
+    .bar-tip { transition: opacity 100ms ease; }
   }
 
   .bars-axis {
@@ -1256,6 +1210,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   </button>
 </div>
 <div class="ctx-toast" id="ctxToast" aria-live="polite"></div>
+<div class="bar-tip" id="barTip" role="tooltip" aria-hidden="true"></div>
 <script>
   (function(){
     var btn = document.getElementById('subBtn');
@@ -1370,6 +1325,8 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       var emptyBars = '';
       // Build YYYY-MM-DD labels for the last N days, oldest first (matches
       // server-rendered ordering: leftmost = N days ago, rightmost = today).
+      // Tooltips share a single floating element (#barTip) populated from
+      // these data attributes, so the per-bar DOM stays cheap on mobile.
       var todayMs = Date.now();
       for(var i = ${HISTORY_DAYS} - 1; i >= 0; i--){
         var d = new Date(todayMs - i * 86400000);
@@ -1377,13 +1334,10 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
           String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
           String(d.getUTCDate()).padStart(2, '0');
         emptyBars +=
-          '<span class="bar bar-none" tabindex="0">' +
-            '<span class="bar-tip" role="tooltip">' +
-              '<span class="tt-date">' + esc(ymd) + '</span>' +
-              '<span class="tt-status"><span class="tt-dot tt-dot-none"></span>No data</span>' +
-              '<span class="tt-row tt-muted">No checks recorded</span>' +
-            '</span>' +
-          '</span>';
+          '<span class="bar bar-none" tabindex="0"' +
+            ' data-d="' + esc(ymd) + '"' +
+            ' data-s="none"' +
+            ' data-c="0" data-o="0" data-x="0" data-r="0"></span>';
       }
       el.innerHTML =
         '<div class="worker-row ' + esc(st) + '" data-tile-row title="' + esc(tileTitle(name, w)) + '">' +
@@ -1593,6 +1547,130 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
         close();
       }
     });
+  })();
+
+  /* Shared bar tooltip — hydrates a single floating element on hover/focus
+     so each bar can stay a single span. Drastically reduces DOM size and
+     keeps mobile browsers from OOM-reloading the page. */
+  (function(){
+    var tip = document.getElementById('barTip');
+    if(!tip) return;
+
+    var STATUS_LABEL = {
+      up: 'Operational',
+      degraded: 'Partial outage',
+      down: 'Outage',
+      none: 'No data'
+    };
+    var DOT_CLASS = {
+      up: 'tt-dot tt-dot-up',
+      degraded: 'tt-dot tt-dot-degraded',
+      down: 'tt-dot tt-dot-down',
+      none: 'tt-dot tt-dot-none'
+    };
+
+    function esc(s){
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+    }
+
+    function buildHtml(bar){
+      var date = bar.getAttribute('data-d') || '';
+      var status = bar.getAttribute('data-s') || 'none';
+      var checks = parseInt(bar.getAttribute('data-c') || '0', 10) || 0;
+      var ok = parseInt(bar.getAttribute('data-o') || '0', 10) || 0;
+      var down = parseInt(bar.getAttribute('data-x') || '0', 10) || 0;
+      var rt = parseInt(bar.getAttribute('data-r') || '0', 10) || 0;
+      var label = STATUS_LABEL[status] || STATUS_LABEL.none;
+      var dotCls = DOT_CLASS[status] || DOT_CLASS.none;
+      var rows = '';
+      if(status === 'none' || checks === 0){
+        rows = '<div class="tt-row tt-muted">No checks recorded</div>';
+      } else {
+        var parts = [];
+        if(ok) parts.push(ok + ' ok');
+        if(down) parts.push(down + ' failed');
+        var breakdown = parts.length > 1 ? parts.join(' \u00b7 ') : '';
+        rows =
+          '<div class="tt-row"><span class="tt-key">Checks</span><span class="tt-val">' + checks + '</span></div>' +
+          (breakdown ? '<div class="tt-row tt-muted"><span class="tt-key">Breakdown</span><span class="tt-val">' + esc(breakdown) + '</span></div>' : '') +
+          (rt > 0 ? '<div class="tt-row"><span class="tt-key">Avg response</span><span class="tt-val">' + rt + ' ms</span></div>' : '');
+      }
+      return (
+        '<span class="tt-date">' + esc(date) + '</span>' +
+        '<span class="tt-status"><span class="' + dotCls + '"></span>' + esc(label) + '</span>' +
+        rows
+      );
+    }
+
+    function position(bar){
+      // Show first so we can measure, but keep transparent until placed.
+      tip.classList.add('show');
+      tip.style.opacity = '0';
+      var br = bar.getBoundingClientRect();
+      var tr = tip.getBoundingClientRect();
+      var margin = 8;
+      var preferredLeft = br.left + br.width / 2 - tr.width / 2;
+      var maxLeft = window.innerWidth - tr.width - margin;
+      var left = Math.max(margin, Math.min(preferredLeft, maxLeft));
+      var top = br.top - tr.height - 10;
+      var below = false;
+      if(top < margin){
+        top = br.bottom + 10;
+        below = true;
+      }
+      var arrow = br.left + br.width / 2 - left;
+      arrow = Math.max(12, Math.min(arrow, tr.width - 12));
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+      tip.style.setProperty('--bar-tip-arrow', arrow + 'px');
+      tip.style.transform = below ? 'translate(0, 0)' : 'translate(0, 0)';
+      tip.style.opacity = '1';
+    }
+
+    function show(bar){
+      tip.innerHTML = buildHtml(bar);
+      position(bar);
+    }
+
+    function hide(){
+      tip.classList.remove('show');
+      tip.style.opacity = '0';
+    }
+
+    function findBar(target){
+      if(!target || !target.closest) return null;
+      return target.closest('.bar');
+    }
+
+    document.addEventListener('mouseover', function(e){
+      var bar = findBar(e.target);
+      if(bar) show(bar);
+    });
+    document.addEventListener('mouseout', function(e){
+      var bar = findBar(e.target);
+      if(!bar) return;
+      var related = e.relatedTarget;
+      if(related && bar.contains(related)) return;
+      hide();
+    });
+    document.addEventListener('focusin', function(e){
+      var bar = findBar(e.target);
+      if(bar) show(bar);
+    });
+    document.addEventListener('focusout', function(e){
+      var bar = findBar(e.target);
+      if(bar) hide();
+    });
+    document.addEventListener('touchstart', function(e){
+      var bar = findBar(e.target);
+      if(bar){ show(bar); }
+      else { hide(); }
+    }, { passive: true });
+    window.addEventListener('scroll', hide, { passive: true });
+    window.addEventListener('resize', hide);
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') hide(); });
   })();
 </script>
 </body>
