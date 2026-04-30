@@ -1126,7 +1126,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
 <div class="page">
   <header class="top">
     <div class="brand">
-      <a href="/" aria-label="${escapeHtml(title)} status home">
+      <a href="/" aria-label="${escapeHtml(title)} status home" data-ctx-target>
         ${logo ? `<img src="${escapeHtml(logo)}" alt="${escapeHtml(title)}" />` : escapeHtml(title)}
       </a>
     </div>
@@ -1257,6 +1257,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     var pollTimer = null;
     var lastChecked = null;
     var ageTimer = null;
+    var inFlight = false;
 
     function esc(s){
       return String(s == null ? '' : s)
@@ -1439,6 +1440,8 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     }
 
     function load(force){
+      if(inFlight) return;
+      inFlight = true;
       if(refreshBtn){ refreshBtn.disabled = true; }
       var url = ENDPOINT + (force ? '?refresh=1' : '');
       var ctrl = ('AbortController' in window) ? new AbortController() : null;
@@ -1448,29 +1451,35 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
         .then(function(data){ render(data); })
         .catch(function(e){ showError('Live status unavailable (' + (e && e.message ? e.message : 'error') + ')'); })
         .then(function(){
+          inFlight = false;
           if(timeoutId) clearTimeout(timeoutId);
           if(refreshBtn){ refreshBtn.disabled = false; }
         });
     }
 
-    function start(){
-      load(false);
-      clearInterval(pollTimer);
+    function start(immediate){
+      if(pollTimer) return;
+      if(immediate) load(false);
       pollTimer = setInterval(function(){ load(false); }, POLL_MS);
-      clearInterval(ageTimer);
+      if(ageTimer) clearInterval(ageTimer);
       ageTimer = setInterval(tickAge, 1000);
     }
-    function stop(){ clearInterval(pollTimer); clearInterval(ageTimer); }
+    function stop(){
+      clearInterval(pollTimer);
+      clearInterval(ageTimer);
+      pollTimer = null;
+      ageTimer = null;
+    }
 
     document.addEventListener('visibilitychange', function(){
-      if(document.hidden) stop(); else start();
+      if(document.hidden) stop(); else start(false);
     });
 
     if(refreshBtn){
       refreshBtn.addEventListener('click', function(){ load(true); });
     }
 
-    start();
+    start(true);
   })();
 
   /* Custom right-click context menu (Fern-style) */
@@ -1502,12 +1511,13 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     }
 
     document.addEventListener('contextmenu', function(e){
-      // allow native menu inside form fields and links to external resources via shift
+      // Only replace the browser context menu on the logo/brand mark.
       if(e.shiftKey) return;
       var t = e.target;
-      if(t && (t.closest('input,textarea,select'))) return;
+      var trigger = t && t.closest('[data-ctx-target]');
+      if(!trigger) return;
       e.preventDefault();
-      lastTarget = t;
+      lastTarget = trigger;
       open(e.clientX, e.clientY);
     });
 
