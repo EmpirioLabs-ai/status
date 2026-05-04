@@ -1,11 +1,27 @@
 {
   "version": 1,
-  "updated_at": 1777912888,
+  "updated_at": 1777913189,
   "workers": {
+    "ace-step-1-5-xl": {
+      "first_seen": 1777913189,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
+      "models": [],
+      "buckets": {
+        "2026-05-04": {
+          "checks": 1,
+          "ok": 0,
+          "suspended": 0,
+          "down": 1,
+          "lat_sum": 0,
+          "lat_count": 0
+        }
+      }
+    },
     "amazon-nova-canvas": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -17,19 +33,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32174.100000000002,
-          "lat_count": 202
+          "lat_sum": 32239.100000000002,
+          "lat_count": 203
         }
       }
     },
     "amazon-nova-reel-1-1": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -41,19 +57,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 30049.5,
-          "lat_count": 202
+          "lat_sum": 30369,
+          "lat_count": 203
         }
       }
     },
     "deepgram-nova-3": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "deepgram/nova-3",
         "nova-3",
@@ -149,51 +165,51 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 24296.60000000001,
-          "lat_count": 202
+          "lat_sum": 24339.10000000001,
+          "lat_count": 203
         }
       }
     },
     "deepreasoning": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 18425.099999999995,
-          "lat_count": 143
+          "lat_sum": 18520.499999999996,
+          "lat_count": 144
         }
       }
     },
     "deepseek-prover-v2": {
       "first_seen": 1777861563,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 176,
-          "ok": 174,
+          "checks": 177,
+          "ok": 175,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 21790.3,
-          "lat_count": 174
+          "lat_sum": 21892.1,
+          "lat_count": 175
         }
       }
     },
     "deepseek-v3-2": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -205,19 +221,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 26774.800000000007,
-          "lat_count": 202
+          "lat_sum": 26864.900000000005,
+          "lat_count": 203
         }
       }
     },
     "deepseek-v4-flash": {
       "first_seen": 1777442768,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-04-29": {
@@ -261,19 +277,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 26653.200000000004,
-          "lat_count": 202
+          "lat_sum": 27010.400000000005,
+          "lat_count": 203
         }
       }
     },
     "deepseek-v4-pro": {
       "first_seen": 1777442768,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-04-29": {
@@ -317,19 +333,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 25436.499999999985,
-          "lat_count": 202
+          "lat_sum": 25540.999999999985,
+          "lat_count": 203
         }
       }
     },
     "exa-answer": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -341,19 +357,19 @@
           "lat_count": 25
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 31803.500000000004,
-          "lat_count": 202
+          "lat_sum": 31862.100000000002,
+          "lat_count": 203
         }
       }
     },
     "exa-research": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -365,19 +381,19 @@
           "lat_count": 25
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 30195.199999999997,
-          "lat_count": 202
+          "lat_sum": 30273.699999999997,
+          "lat_count": 203
         }
       }
     },
     "exa-search": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -389,19 +405,35 @@
           "lat_count": 25
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 29996.69999999999,
-          "lat_count": 202
+          "lat_sum": 30057.79999999999,
+          "lat_count": 203
+        }
+      }
+    },
+    "flux-2-klein-4b": {
+      "first_seen": 1777913189,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
+      "models": [],
+      "buckets": {
+        "2026-05-04": {
+          "checks": 1,
+          "ok": 0,
+          "suspended": 0,
+          "down": 1,
+          "lat_sum": 0,
+          "lat_count": 0
         }
       }
     },
     "gemini-2-5-flash-tts": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -413,19 +445,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32545.600000000006,
-          "lat_count": 202
+          "lat_sum": 32932.90000000001,
+          "lat_count": 203
         }
       }
     },
     "gemini-2-5-pro-tts": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -437,19 +469,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32594.09999999999,
-          "lat_count": 202
+          "lat_sum": 32931.49999999999,
+          "lat_count": 203
         }
       }
     },
     "gemini-3-1-flash-tts": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -461,19 +493,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 33236.700000000004,
-          "lat_count": 202
+          "lat_sum": 33626.00000000001,
+          "lat_count": 203
         }
       }
     },
     "gemma-3-27b": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "google/gemma-3-27b",
         "gemma-3-27b",
@@ -569,19 +601,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 36304.200000000004,
-          "lat_count": 202
+          "lat_sum": 36367.50000000001,
+          "lat_count": 203
         }
       }
     },
     "glm-tts": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -593,19 +625,19 @@
           "lat_count": 25
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 31443.000000000007,
-          "lat_count": 202
+          "lat_sum": 31484.300000000007,
+          "lat_count": 203
         }
       }
     },
     "gptzero": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -617,35 +649,35 @@
           "lat_count": 25
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32312.40000000002,
-          "lat_count": 202
+          "lat_sum": 32352.50000000002,
+          "lat_count": 203
         }
       }
     },
     "happyhorse-1-0": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 15826.199999999995,
-          "lat_count": 143
+          "lat_sum": 15920.799999999996,
+          "lat_count": 144
         }
       }
     },
     "hunyuan-image-3": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -657,19 +689,19 @@
           "lat_count": 24
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32800.09999999999,
-          "lat_count": 202
+          "lat_sum": 33124.19999999999,
+          "lat_count": 203
         }
       }
     },
     "hunyuan-video-1-5": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -681,35 +713,35 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 33177.399999999994,
-          "lat_count": 202
+          "lat_sum": 33532.49999999999,
+          "lat_count": 203
         }
       }
     },
     "janus-pro-deepseek": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 18222.600000000006,
-          "lat_count": 143
+          "lat_sum": 18276.200000000004,
+          "lat_count": 144
         }
       }
     },
     "kling-o3": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -721,19 +753,19 @@
           "lat_count": 24
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32703.600000000002,
-          "lat_count": 202
+          "lat_sum": 32753.800000000003,
+          "lat_count": 203
         }
       }
     },
     "kling-v3-motion-control": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -745,19 +777,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 33511.700000000004,
-          "lat_count": 202
+          "lat_sum": 33876.700000000004,
+          "lat_count": 203
         }
       }
     },
     "linkup-deep-search": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -769,19 +801,19 @@
           "lat_count": 24
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 30131.400000000012,
-          "lat_count": 202
+          "lat_sum": 30478.50000000001,
+          "lat_count": 203
         }
       }
     },
     "linkup-standard": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -793,35 +825,35 @@
           "lat_count": 24
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 30049.299999999992,
-          "lat_count": 202
+          "lat_sum": 30368.699999999993,
+          "lat_count": 203
         }
       }
     },
     "magistral-medium-2509-thinking": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 18963.500000000007,
-          "lat_count": 143
+          "lat_sum": 19338.700000000008,
+          "lat_count": 144
         }
       }
     },
     "manus": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -833,35 +865,35 @@
           "lat_count": 24
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 33687.59999999999,
-          "lat_count": 202
+          "lat_sum": 33726.69999999999,
+          "lat_count": 203
         }
       }
     },
     "mimo-v2-5": {
       "first_seen": 1777861563,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 176,
-          "ok": 174,
+          "checks": 177,
+          "ok": 175,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 19964.999999999985,
-          "lat_count": 174
+          "lat_sum": 20015.099999999984,
+          "lat_count": 175
         }
       }
     },
     "mimo-v2-5-pro": {
       "first_seen": 1776921465,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "xiaomi/mimo-v2.5-pro",
         "mimo-v2.5-pro",
@@ -958,19 +990,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 26829.40000000002,
-          "lat_count": 202
+          "lat_sum": 26922.20000000002,
+          "lat_count": 203
         }
       }
     },
     "mimo-v2-flash": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -982,19 +1014,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 27434.79999999997,
-          "lat_count": 202
+          "lat_sum": 27523.59999999997,
+          "lat_count": 203
         }
       }
     },
     "mimo-v2-omni": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1006,19 +1038,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 29323.800000000003,
-          "lat_count": 202
+          "lat_sum": 29404.300000000003,
+          "lat_count": 203
         }
       }
     },
     "mimo-v2-pro": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1030,35 +1062,35 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 29164.600000000006,
-          "lat_count": 202
+          "lat_sum": 29231.000000000007,
+          "lat_count": 203
         }
       }
     },
     "minimax-m2-7-highspeed": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 16551.50000000001,
-          "lat_count": 143
+          "lat_sum": 16942.80000000001,
+          "lat_count": 144
         }
       }
     },
     "mistral-medium-3": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "mistralai/mistral-medium-3",
         "mistral-medium-3"
@@ -1153,19 +1185,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 24284.7,
-          "lat_count": 202
+          "lat_sum": 24614.8,
+          "lat_count": 203
         }
       }
     },
     "mistral-medium-3-1": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "mistralai/mistral-medium-3.1",
         "mistral-medium-3.1",
@@ -1261,19 +1293,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 23997.899999999998,
-          "lat_count": 202
+          "lat_sum": 24363.8,
+          "lat_count": 203
         }
       }
     },
     "mistral-small-3-1": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1285,19 +1317,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 26496.399999999994,
-          "lat_count": 202
+          "lat_sum": 26837.399999999994,
+          "lat_count": 203
         }
       }
     },
     "mistral-small-4": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1309,19 +1341,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 26760.499999999985,
-          "lat_count": 202
+          "lat_sum": 27090.599999999984,
+          "lat_count": 203
         }
       }
     },
     "moss-video-and-audio": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1333,35 +1365,35 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 31892.600000000024,
-          "lat_count": 202
+          "lat_sum": 32240.700000000023,
+          "lat_count": 203
         }
       }
     },
     "nova-lite-1-0": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 17947.500000000004,
-          "lat_count": 143
+          "lat_sum": 18005.100000000002,
+          "lat_count": 144
         }
       }
     },
     "nova-lite-2": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "amazon/nova-lite-2",
         "amazon-nova-lite-2",
@@ -1458,67 +1490,67 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 25812.89999999999,
-          "lat_count": 202
+          "lat_sum": 25883.99999999999,
+          "lat_count": 203
         }
       }
     },
     "nova-micro-1-0": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 17648.70000000002,
-          "lat_count": 143
+          "lat_sum": 17710.300000000017,
+          "lat_count": 144
         }
       }
     },
     "nova-premier-1-0": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 17552.9,
-          "lat_count": 143
+          "lat_sum": 17632.5,
+          "lat_count": 144
         }
       }
     },
     "nova-pro-1-0": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 18041.000000000004,
-          "lat_count": 143
+          "lat_sum": 18090.700000000004,
+          "lat_count": 144
         }
       }
     },
     "openai-whisper-1": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1530,19 +1562,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 28618.799999999985,
-          "lat_count": 202
+          "lat_sum": 28674.099999999984,
+          "lat_count": 203
         }
       }
     },
     "perplexity-advanced-deep-research": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1554,19 +1586,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 28592.199999999993,
-          "lat_count": 202
+          "lat_sum": 28998.499999999993,
+          "lat_count": 203
         }
       }
     },
     "perplexity-deep-research": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1578,19 +1610,19 @@
           "lat_count": 24
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 30757.80000000002,
-          "lat_count": 202
+          "lat_sum": 31157.80000000002,
+          "lat_count": 203
         }
       }
     },
     "perplexity-pro-search": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1602,19 +1634,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 30578.09999999999,
-          "lat_count": 202
+          "lat_sum": 30974.799999999992,
+          "lat_count": 203
         }
       }
     },
     "perplexity-search": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1626,19 +1658,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32296.6,
-          "lat_count": 202
+          "lat_sum": 32674.899999999998,
+          "lat_count": 203
         }
       }
     },
     "perplexity-sonar": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1650,19 +1682,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 29835.10000000001,
-          "lat_count": 202
+          "lat_sum": 30184.60000000001,
+          "lat_count": 203
         }
       }
     },
     "perplexity-sonar-pro": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1674,19 +1706,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 31241.8,
-          "lat_count": 202
+          "lat_sum": 31635.7,
+          "lat_count": 203
         }
       }
     },
     "perplexity-sonar-reasoning-pro": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1698,19 +1730,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 28014.100000000006,
-          "lat_count": 202
+          "lat_sum": 28416.100000000006,
+          "lat_count": 203
         }
       }
     },
     "pixverse-v5": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1722,19 +1754,19 @@
           "lat_count": 24
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32986.200000000004,
-          "lat_count": 202
+          "lat_sum": 33055.4,
+          "lat_count": 203
         }
       }
     },
     "pixverse-v5-6": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -1746,131 +1778,131 @@
           "lat_count": 23
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 35197.399999999994,
-          "lat_count": 202
+          "lat_sum": 35295.799999999996,
+          "lat_count": 203
         }
       }
     },
     "qwen-image-2-0": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 19310.199999999993,
-          "lat_count": 143
+          "lat_sum": 19411.399999999994,
+          "lat_count": 144
         }
       }
     },
     "qwen3-5-flash": {
       "first_seen": 1777862466,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 173,
-          "ok": 171,
+          "checks": 174,
+          "ok": 172,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 19712.699999999993,
-          "lat_count": 171
+          "lat_sum": 19799.199999999993,
+          "lat_count": 172
         }
       }
     },
     "qwen3-5-omni-flash": {
       "first_seen": 1777862466,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 173,
-          "ok": 171,
+          "checks": 174,
+          "ok": 172,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 18998.899999999994,
-          "lat_count": 171
+          "lat_sum": 19340.299999999996,
+          "lat_count": 172
         }
       }
     },
     "qwen3-5-omni-plus": {
       "first_seen": 1777862466,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 173,
-          "ok": 171,
+          "checks": 174,
+          "ok": 172,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 18865.6,
-          "lat_count": 171
+          "lat_sum": 19189.3,
+          "lat_count": 172
         }
       }
     },
     "qwen3-5-plus": {
       "first_seen": 1777862466,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 173,
-          "ok": 171,
+          "checks": 174,
+          "ok": 172,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 19417.5,
-          "lat_count": 171
+          "lat_sum": 19497.9,
+          "lat_count": 172
         }
       }
     },
     "qwen3-6-max-preview": {
       "first_seen": 1777862466,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 173,
-          "ok": 171,
+          "checks": 174,
+          "ok": 172,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 20770.499999999993,
-          "lat_count": 171
+          "lat_sum": 21150.499999999993,
+          "lat_count": 172
         }
       }
     },
     "qwen3-6-plus": {
       "first_seen": 1777862466,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 173,
-          "ok": 171,
+          "checks": 174,
+          "ok": 172,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 20538.9,
-          "lat_count": 171
+          "lat_sum": 20624.800000000003,
+          "lat_count": 172
         }
       }
     },
     "qwen3-max": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "qwen/qwen3-max",
         "qwen3-max"
@@ -1965,19 +1997,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 25573.89999999999,
-          "lat_count": 202
+          "lat_sum": 25630.39999999999,
+          "lat_count": 203
         }
       }
     },
     "qwen3-max-preview": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "qwen/qwen3-max-preview",
         "qwen3-max-preview"
@@ -2072,19 +2104,19 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 25588.10000000001,
-          "lat_count": 202
+          "lat_sum": 25917.700000000008,
+          "lat_count": 203
         }
       }
     },
     "qwen3-max-thinking": {
       "first_seen": 1776911897,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [
         "qwen/qwen3-max-thinking",
         "qwen3-max-thinking",
@@ -2180,99 +2212,99 @@
           "lat_count": 302
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 27576.10000000002,
-          "lat_count": 202
+          "lat_sum": 27958.500000000022,
+          "lat_count": 203
         }
       }
     },
     "qwen3-rerank": {
       "first_seen": 1777876565,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 125,
-          "ok": 123,
+          "checks": 126,
+          "ok": 124,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 16153.099999999997,
-          "lat_count": 123
+          "lat_sum": 16238.199999999997,
+          "lat_count": 124
         }
       }
     },
     "seed-2-0-code": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 16654.7,
-          "lat_count": 143
+          "lat_sum": 16726.3,
+          "lat_count": 144
         }
       }
     },
     "seed-2-0-lite": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 18141.300000000003,
-          "lat_count": 143
+          "lat_sum": 18216.000000000004,
+          "lat_count": 144
         }
       }
     },
     "seed-2-0-mini": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 17082.000000000004,
-          "lat_count": 143
+          "lat_sum": 17157.900000000005,
+          "lat_count": 144
         }
       }
     },
     "seed-2-0-pro": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 17864.2,
-          "lat_count": 143
+          "lat_sum": 17933.5,
+          "lat_count": 144
         }
       }
     },
     "seedance-2-0-fast": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2284,19 +2316,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 30774.100000000017,
-          "lat_count": 202
+          "lat_sum": 31115.50000000002,
+          "lat_count": 203
         }
       }
     },
     "seedance-2-0-pro": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2308,19 +2340,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32921.09999999999,
-          "lat_count": 202
+          "lat_sum": 33280.99999999999,
+          "lat_count": 203
         }
       }
     },
     "seedream-5-0-lite": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2332,19 +2364,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 33778.39999999998,
-          "lat_count": 202
+          "lat_sum": 34152.59999999998,
+          "lat_count": 203
         }
       }
     },
     "soulx-podcast": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2356,19 +2388,19 @@
           "lat_count": 23
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 35344.500000000015,
-          "lat_count": 202
+          "lat_sum": 35443.80000000002,
+          "lat_count": 203
         }
       }
     },
     "stable-audio-2-0": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2380,19 +2412,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32019.999999999985,
-          "lat_count": 202
+          "lat_sum": 32338.899999999987,
+          "lat_count": 203
         }
       }
     },
     "stable-audio-2-5": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2404,19 +2436,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 34378.4,
-          "lat_count": 202
+          "lat_sum": 34730.4,
+          "lat_count": 203
         }
       }
     },
     "svi-2-0-pro": {
       "first_seen": 1777847178,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2428,19 +2460,19 @@
           "lat_count": 21
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 32135.600000000013,
-          "lat_count": 202
+          "lat_sum": 32209.000000000015,
+          "lat_count": 203
         }
       }
     },
     "tavily-research": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2452,19 +2484,19 @@
           "lat_count": 23
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 31818.299999999996,
-          "lat_count": 202
+          "lat_sum": 32174.699999999997,
+          "lat_count": 203
         }
       }
     },
     "tavily-search": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2476,67 +2508,67 @@
           "lat_count": 23
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 31709.399999999998,
-          "lat_count": 202
+          "lat_sum": 31805.6,
+          "lat_count": 203
         }
       }
     },
     "text-embedding-v4": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 19625.800000000007,
-          "lat_count": 143
+          "lat_sum": 20000.800000000007,
+          "lat_count": 144
         }
       }
     },
     "tongyi-embedding-vision-flash": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 19723.300000000007,
-          "lat_count": 143
+          "lat_sum": 20132.600000000006,
+          "lat_count": 144
         }
       }
     },
     "tongyi-embedding-vision-plus": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 19105.599999999995,
-          "lat_count": 143
+          "lat_sum": 19509.399999999994,
+          "lat_count": 144
         }
       }
     },
     "wan-2-6": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2548,19 +2580,19 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 29621.400000000016,
-          "lat_count": 202
+          "lat_sum": 29665.000000000015,
+          "lat_count": 203
         }
       }
     },
     "wan-2-7": {
       "first_seen": 1777824094,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-03": {
@@ -2572,28 +2604,44 @@
           "lat_count": 105
         },
         "2026-05-04": {
-          "checks": 204,
-          "ok": 202,
+          "checks": 205,
+          "ok": 203,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 34267.59999999999,
-          "lat_count": 202
+          "lat_sum": 34313.49999999999,
+          "lat_count": 203
         }
       }
     },
     "wan2-7-image": {
       "first_seen": 1777870561,
-      "last_seen": 1777912888,
-      "last_seen_in_health": 1777912888,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
       "models": [],
       "buckets": {
         "2026-05-04": {
-          "checks": 145,
-          "ok": 143,
+          "checks": 146,
+          "ok": 144,
           "suspended": 0,
           "down": 2,
-          "lat_sum": 15488.099999999997,
-          "lat_count": 143
+          "lat_sum": 15576.399999999996,
+          "lat_count": 144
+        }
+      }
+    },
+    "whisper-large-v3-turbo": {
+      "first_seen": 1777913189,
+      "last_seen": 1777913189,
+      "last_seen_in_health": 1777913189,
+      "models": [],
+      "buckets": {
+        "2026-05-04": {
+          "checks": 1,
+          "ok": 0,
+          "suspended": 0,
+          "down": 1,
+          "lat_sum": 0,
+          "lat_count": 0
         }
       }
     }
