@@ -43,10 +43,12 @@ const STATE_FILE = join(HISTORY_DIR, "models-state.json");
 const ENDPOINT =
   process.env.HEALTH_ENDPOINT || "https://api.empiriolabs.ai/health";
 const HISTORY_DAYS = Number(process.env.HISTORY_DAYS || 90);
-// Drop a tracked worker if /health has not surfaced it in this many days.
-// Stops renamed/removed services from sitting on the status page forever.
-// Set to 0 to disable auto-pruning.
-const STALE_PRUNE_DAYS = Math.max(0, Number(process.env.STALE_PRUNE_DAYS || 7));
+// Drop a tracked worker if /health hasn't surfaced it in this many seconds.
+// Default 1800 (30 min) so renamed/removed services disappear from the
+// status page within ~one scheduled run cycle. Tolerant of one transient
+// /health hiccup at the default 5-min schedule, but immediate enough that
+// stale entries don't linger for days. Set to 0 to disable auto-pruning.
+const STALE_PRUNE_SECONDS = Math.max(0, Number(process.env.STALE_PRUNE_SECONDS || 1800));
 const FETCH_TIMEOUT_MS = Number(process.env.FETCH_TIMEOUT_MS || 30000);
 const FETCH_RETRIES = Math.max(1, Number(process.env.FETCH_RETRIES || 3));
 const FETCH_RETRY_DELAY_MS = Math.max(
@@ -252,8 +254,8 @@ function sleep(ms) {
 }
 
 function pruneStaleWorkers(state, nowUnix) {
-  if (!STALE_PRUNE_DAYS) return [];
-  const cutoff = nowUnix - STALE_PRUNE_DAYS * 86400;
+  if (!STALE_PRUNE_SECONDS) return [];
+  const cutoff = nowUnix - STALE_PRUNE_SECONDS;
   const dropped = [];
   for (const key of Object.keys(state.workers)) {
     const entry = state.workers[key];
@@ -315,7 +317,7 @@ async function main() {
   const dropped = pruneStaleWorkers(state, lastSampleUnix || Math.floor(Date.now() / 1000));
   if (dropped.length) {
     console.log(
-      `[record-models] pruned ${dropped.length} stale workers (no /health entry for ${STALE_PRUNE_DAYS}d): ${dropped.join(", ")}`
+      `[record-models] pruned ${dropped.length} stale workers (no /health entry for ${STALE_PRUNE_SECONDS}s): ${dropped.join(", ")}`
     );
   }
 
