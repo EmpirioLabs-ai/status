@@ -26,7 +26,7 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - uses: upptime/uptime-monitor@master
+      - uses: upptime/uptime-monitor@0b98676
         with:
           command: "update"
         env:
