@@ -43,6 +43,10 @@ const STATE_FILE = join(HISTORY_DIR, "models-state.json");
 const ENDPOINT =
   process.env.HEALTH_ENDPOINT || "https://api.empiriolabs.ai/health";
 const HISTORY_DAYS = Number(process.env.HISTORY_DAYS || 90);
+// Drop a tracked worker if /health has not surfaced it in this many days.
+// Stops renamed/removed services from sitting on the status page forever.
+// Set to 0 to disable auto-pruning.
+const STALE_PRUNE_DAYS = Math.max(0, Number(process.env.STALE_PRUNE_DAYS || 7));
 const FETCH_TIMEOUT_MS = Number(process.env.FETCH_TIMEOUT_MS || 30000);
 const FETCH_RETRIES = Math.max(1, Number(process.env.FETCH_RETRIES || 3));
 const FETCH_RETRY_DELAY_MS = Math.max(
@@ -100,6 +104,7 @@ function saveState(state) {
     out.workers[key] = {
       first_seen: w.first_seen,
       last_seen: w.last_seen,
+      last_seen_in_health: w.last_seen_in_health || w.last_seen,
       models: w.models || [],
       buckets,
     };
@@ -179,12 +184,14 @@ function recordSample(state, data, nowUnix) {
       state.workers[key] = {
         first_seen: nowUnix,
         last_seen: nowUnix,
+        last_seen_in_health: nowUnix,
         models: Array.isArray(w.models) ? w.models : [],
         buckets: {},
       };
     }
     const entry = state.workers[key];
     entry.last_seen = nowUnix;
+    entry.last_seen_in_health = nowUnix;
     if (Array.isArray(w.models) && w.models.length) entry.models = w.models;
 
     if (!entry.buckets[day]) {
@@ -244,6 +251,21 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function pruneStaleWorkers(state, nowUnix) {
+  if (!STALE_PRUNE_DAYS) return [];
+  const cutoff = nowUnix - STALE_PRUNE_DAYS * 86400;
+  const dropped = [];
+  for (const key of Object.keys(state.workers)) {
+    const entry = state.workers[key];
+    const lastInHealth = entry.last_seen_in_health || entry.first_seen || 0;
+    if (lastInHealth < cutoff) {
+      dropped.push(key);
+      delete state.workers[key];
+    }
+  }
+  return dropped;
+}
+
 async function main() {
   const state = loadState();
   let totalSamples = 0;
@@ -287,6 +309,13 @@ async function main() {
     totalSamples = 1;
     console.error(
       `[record-models] no health samples succeeded; recorded ${lastWorkerCount} workers down`
+    );
+  }
+
+  const dropped = pruneStaleWorkers(state, lastSampleUnix || Math.floor(Date.now() / 1000));
+  if (dropped.length) {
+    console.log(
+      `[record-models] pruned ${dropped.length} stale workers (no /health entry for ${STALE_PRUNE_DAYS}d): ${dropped.join(", ")}`
     );
   }
 
