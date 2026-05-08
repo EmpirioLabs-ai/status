@@ -1426,14 +1426,18 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       // Roll suspended into operational — we don't surface the cold/idle
       // distinction to viewers (it's a platform detail, not an availability
       // signal). Future always-on platforms will return suspended=0 anyway.
-      var up = (data.workers_up || 0) + (data.workers_suspended || 0);
-      var down = data.workers_down || 0;
-      // Prefer models_total (one logical model per row, post fan-out)
-      // over workers_total (one Railway service per row). For workers
-      // that host >1 model (inworld-tts -> tts-1-5-mini + tts-1-5-max)
-      // the page tiles include each model, so the total counter has
-      // to match the tile count to read sensibly. Falls back to
-      // workers_total when an older gateway doesn't emit models_total.
+      // Prefer models_* counts when present so 'X operational of Y total'
+      // counts logical models (one per row), not Railway services. For
+      // workers that host >1 model (inworld-tts -> tts-1-5-mini +
+      // tts-1-5-max) the page renders one row per model, and the
+      // counter has to match the row count. Falls back to workers_*
+      // when an older gateway doesn't emit models_* fields.
+      var up = data.models_up != null
+        ? (data.models_up + (data.models_suspended || 0))
+        : ((data.workers_up || 0) + (data.workers_suspended || 0));
+      var down = data.models_down != null
+        ? data.models_down
+        : (data.workers_down || 0);
       var total = data.models_total || data.workers_total || (up + down);
       var n = function(id, v){ var el = document.getElementById(id); if(el) el.textContent = v; };
       n('wmUp', up); n('wmDown', down); n('wmTotal', total);
