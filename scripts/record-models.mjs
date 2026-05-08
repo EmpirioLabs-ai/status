@@ -169,25 +169,28 @@ async function fetchHealthWithRetries(sampleLabel) {
 // Expand a worker entry from the gateway's /health response into one
 // or more (key, alias-list) pairs for the status page.
 //
-// Most workers expose ONE logical model and produce one entry. A few
-// (inworld-tts hosts tts-1-5-mini + tts-1-5-max; runpod-media-proxy
-// hosts ace-step / flux-2-klein / trellis / whisper) host multiple
-// distinct models from a single Railway service. The gateway tags each
-// worker with `model_slugs` (canonical model slugs from model_catalog),
-// so we use that to fan out into one row per logical model — the
-// status page ends up reflecting "models the customer can call" rather
-// than "Railway services running."
+// Today the only real "one Railway service hosts multiple distinct
+// models" case is inworld-tts (serves both tts-1-5-mini and tts-1-5-max).
+// runpod_media_proxy shares CODE across multiple Railway services but
+// each has its own service URL, so the gateway already lists them as
+// separate workers — no fan-out needed.
+//
+// Strategy: only fan out when the worker reports >1 model_slug. For
+// the single-model case, keep the existing worker-keyed entry so its
+// 90-day uptime history is preserved across deploys, even when the
+// Railway service name and the canonical model slug differ slightly
+// (e.g. ace-step-1-5-xl Railway service vs. ace-step-1.5-xl catalog
+// slug — both refer to the same single model).
 //
 // Falls back to a single entry keyed by the worker name when
-// model_slugs is missing or empty (older gateway response, network
-// blip), so the page never goes blank just because a snapshot was
-// partial.
+// model_slugs is missing/empty (older gateway response, network blip),
+// so the page never goes blank just because a snapshot was partial.
 function expandWorkerEntries(workerKey, w) {
   const slugs = Array.isArray(w.model_slugs)
     ? w.model_slugs.filter((s) => typeof s === "string" && s.length > 0)
     : [];
-  if (!slugs.length) {
-    return [{ key: workerKey, models: Array.isArray(w.models) ? w.models : [] }];
+  if (slugs.length <= 1) {
+    return [{ key: workerKey, models: Array.isArray(w.models) ? w.models : slugs }];
   }
   return slugs.map((slug) => ({
     key: slug,
