@@ -1,0 +1,46 @@
+Copyright (c) 2026 EmpirioLabs.ai LLC. All rights reserved.
+
+This repository contains source code, configuration, theme assets,
+historical data, and supporting documentation for the EmpirioLabs AI
+status page at https://status.empiriolabs.ai. Its contents are
+published in public form solely for operational transparency.
+
+NO LICENSE OR PERMISSION IS GRANTED to:
+  - copy, fork, mirror, or redistribute the contents of this repository
+    in whole or in part;
+  - modify, adapt, translate, or create derivative works;
+  - use the build scripts, render code, theme assets, or historical
+    uptime data for any service, product, page, fork, or template
+    other than the EmpirioLabs AI status page itself;
+  - reuse the EmpirioLabs name, logo, brand assets, or trade dress in
+    any derivative or fork.
+
+Viewing this repository on GitHub for the purpose of reading,
+reviewing, or auditing what powers status.empiriolabs.ai is permitted.
+
+THIRD-PARTY COMPONENTS
+
+The repository's GitHub Actions workflows invoke
+`upptime/uptime-monitor`, a third-party GitHub Action published under
+the MIT license by its authors. That Action is referenced by
+git-pinned reference and is NOT included in the source of this
+repository; its license governs only the upstream code at
+https://github.com/upptime/uptime-monitor and does not extend to
+EmpirioLabs.ai LLC's original work in this repository.
+
+The repository depends on `js-yaml` (MIT) at runtime; that package is
+included via npm and its upstream license applies to the package.
+
+DISCLAIMER
+
+The contents of this repository are provided "as is" and without
+warranty of any kind, express or implied, including but not limited
+to the warranties of merchantability, fitness for a particular
+purpose, and non-infringement. EmpirioLabs.ai LLC is not liable for
+any claim, damages, or other liability arising from access to or use
+of this repository's contents.
+
+CONTACT
+
+For licensing inquiries, partnerships, or written permission requests,
+contact: support@empiriolabs.ai
