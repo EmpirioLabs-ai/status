@@ -166,13 +166,41 @@ async function fetchHealthWithRetries(sampleLabel) {
   throw lastError;
 }
 
+// Expand a worker entry from the gateway's /health response into one
+// or more (key, alias-list) pairs for the status page.
+//
+// Most workers expose ONE logical model and produce one entry. A few
+// (inworld-tts hosts tts-1-5-mini + tts-1-5-max; runpod-media-proxy
+// hosts ace-step / flux-2-klein / trellis / whisper) host multiple
+// distinct models from a single Railway service. The gateway tags each
+// worker with `model_slugs` (canonical model slugs from model_catalog),
+// so we use that to fan out into one row per logical model — the
+// status page ends up reflecting "models the customer can call" rather
+// than "Railway services running."
+//
+// Falls back to a single entry keyed by the worker name when
+// model_slugs is missing or empty (older gateway response, network
+// blip), so the page never goes blank just because a snapshot was
+// partial.
+function expandWorkerEntries(workerKey, w) {
+  const slugs = Array.isArray(w.model_slugs)
+    ? w.model_slugs.filter((s) => typeof s === "string" && s.length > 0)
+    : [];
+  if (!slugs.length) {
+    return [{ key: workerKey, models: Array.isArray(w.models) ? w.models : [] }];
+  }
+  return slugs.map((slug) => ({
+    key: slug,
+    models: Array.isArray(w.models) ? w.models : [slug],
+  }));
+}
+
 function recordSample(state, data, nowUnix) {
   const workers = data.workers || {};
   const day = utcDay(nowUnix);
   const seen = new Set();
 
-  for (const [key, w] of Object.entries(workers)) {
-    seen.add(key);
+  for (const [workerKey, w] of Object.entries(workers)) {
     const status =
       w.status === "ok" || w.status === "suspended" || w.status === "down"
         ? w.status
@@ -182,38 +210,42 @@ function recordSample(state, data, nowUnix) {
         ? w.latency_ms
         : null;
 
-    if (!state.workers[key]) {
-      state.workers[key] = {
-        first_seen: nowUnix,
-        last_seen: nowUnix,
-        last_seen_in_health: nowUnix,
-        models: Array.isArray(w.models) ? w.models : [],
-        buckets: {},
-      };
-    }
-    const entry = state.workers[key];
-    entry.last_seen = nowUnix;
-    entry.last_seen_in_health = nowUnix;
-    if (Array.isArray(w.models) && w.models.length) entry.models = w.models;
+    for (const { key, models } of expandWorkerEntries(workerKey, w)) {
+      seen.add(key);
 
-    if (!entry.buckets[day]) {
-      entry.buckets[day] = {
-        checks: 0,
-        ok: 0,
-        suspended: 0,
-        down: 0,
-        lat_sum: 0,
-        lat_count: 0,
-      };
+      if (!state.workers[key]) {
+        state.workers[key] = {
+          first_seen: nowUnix,
+          last_seen: nowUnix,
+          last_seen_in_health: nowUnix,
+          models,
+          buckets: {},
+        };
+      }
+      const entry = state.workers[key];
+      entry.last_seen = nowUnix;
+      entry.last_seen_in_health = nowUnix;
+      if (Array.isArray(models) && models.length) entry.models = models;
+
+      if (!entry.buckets[day]) {
+        entry.buckets[day] = {
+          checks: 0,
+          ok: 0,
+          suspended: 0,
+          down: 0,
+          lat_sum: 0,
+          lat_count: 0,
+        };
+      }
+      const b = entry.buckets[day];
+      b.checks += 1;
+      b[status] = (b[status] || 0) + 1;
+      if (status === "ok" && lat != null) {
+        b.lat_sum += lat;
+        b.lat_count += 1;
+      }
+      trimBuckets(entry, nowUnix);
     }
-    const b = entry.buckets[day];
-    b.checks += 1;
-    b[status] = (b[status] || 0) + 1;
-    if (status === "ok" && lat != null) {
-      b.lat_sum += lat;
-      b.lat_count += 1;
-    }
-    trimBuckets(entry, nowUnix);
   }
 
   // Workers we previously tracked but didn't see this run remain in state
