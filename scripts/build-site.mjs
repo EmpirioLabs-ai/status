@@ -1382,23 +1382,44 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       grid.appendChild(tile);
     }
 
+    // Fan out a /health worker entry into one (key, w) pair per
+    // logical model. Mirrors the server-side record-models.mjs logic
+    // so the live JS update doesn't add stale "inworld-tts"-style
+    // worker-keyed tiles when the static HTML already split that
+    // worker into per-model tiles. Also gracefully handles older
+    // /health payloads that don't include model_slugs.
+    function fanOutWorker(workerKey, w){
+      var slugs = (w && Array.isArray(w.model_slugs))
+        ? w.model_slugs.filter(function(s){ return typeof s === 'string' && s.length > 0; })
+        : [];
+      if(slugs.length <= 1){
+        return [{ key: workerKey, w: w }];
+      }
+      return slugs.map(function(slug){ return { key: slug, w: w }; });
+    }
+
     function render(data){
       var workers = data.workers || {};
       var keys = Object.keys(workers);
       var loader = grid.querySelector('.workers-loading');
       if(loader) loader.remove();
       for(var i = 0; i < keys.length; i++){
-        var name = keys[i];
-        var w = workers[name] || {};
-        var st = visibleStatus(w.status);
-        var label = st === 'ok' ? 'Operational' : 'Down';
-        var sel = '[data-worker="' + attrSelectorEscape(name) + '"]';
-        var tile = grid.querySelector(sel);
-        if(tile){
-          applyTile(tile, name, w);
-        } else {
-          tile = createTile(name, w, st, label);
-          insertTileSorted(tile, name);
+        var workerKey = keys[i];
+        var workerData = workers[workerKey] || {};
+        var entries = fanOutWorker(workerKey, workerData);
+        for(var j = 0; j < entries.length; j++){
+          var name = entries[j].key;
+          var w = entries[j].w;
+          var st = visibleStatus(w.status);
+          var label = st === 'ok' ? 'Operational' : 'Down';
+          var sel = '[data-worker="' + attrSelectorEscape(name) + '"]';
+          var tile = grid.querySelector(sel);
+          if(tile){
+            applyTile(tile, name, w);
+          } else {
+            tile = createTile(name, w, st, label);
+            insertTileSorted(tile, name);
+          }
         }
       }
       if(meta) meta.hidden = false;
