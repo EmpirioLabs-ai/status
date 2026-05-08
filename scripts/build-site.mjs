@@ -1407,7 +1407,13 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       // signal). Future always-on platforms will return suspended=0 anyway.
       var up = (data.workers_up || 0) + (data.workers_suspended || 0);
       var down = data.workers_down || 0;
-      var total = data.workers_total || (up + down);
+      // Prefer models_total (one logical model per row, post fan-out)
+      // over workers_total (one Railway service per row). For workers
+      // that host >1 model (inworld-tts -> tts-1-5-mini + tts-1-5-max)
+      // the page tiles include each model, so the total counter has
+      // to match the tile count to read sensibly. Falls back to
+      // workers_total when an older gateway doesn't emit models_total.
+      var total = data.models_total || data.workers_total || (up + down);
       var n = function(id, v){ var el = document.getElementById(id); if(el) el.textContent = v; };
       n('wmUp', up); n('wmDown', down); n('wmTotal', total);
       lastChecked = data.checked_at != null ? data.checked_at : Date.now();
