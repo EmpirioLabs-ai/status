@@ -17,20 +17,21 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ secrets.GH_PAT || github.token }}
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - uses: upptime/uptime-monitor@0b98676cda3ea664029aa354e4fab09d8b130f5f
+      - uses: upptime/uptime-monitor@v1.41.3
         with:
           command: "update"
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
+        continue-on-error: true
       - name: Record site snapshots
         if: always()
         run: node scripts/record-sites.mjs

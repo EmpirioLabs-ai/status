@@ -10,11 +10,11 @@ jobs:
     name: Check response time
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
-      - uses: upptime/uptime-monitor@0b98676cda3ea664029aa354e4fab09d8b130f5f
+      - uses: upptime/uptime-monitor@v1.41.3
         with:
           command: "response-time"
         env:
