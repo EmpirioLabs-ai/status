@@ -288,8 +288,20 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function pruneStaleWorkers(state, nowUnix) {
+// Prune worker entries whose /health visibility has expired. Only runs
+// when the current run produced at least one SUCCESSFUL health sample —
+// otherwise a transient gateway outage that lasts longer than
+// STALE_PRUNE_SECONDS would delete every worker entry (including its
+// historical buckets), which is exactly what happened on 2026-05-19:
+// gateway/health was unreachable for ~30 min, the script kept logging
+// "endpoint unavailable" failures, last_seen_in_health stayed stale on
+// every worker, and the next pruning pass deleted all 113 entries plus
+// 12 days of bucket history. Requiring a successful sample before
+// pruning means renames/removals still get cleaned up at the next
+// healthy check, but outages can never wipe history.
+function pruneStaleWorkers(state, nowUnix, { hadSuccessfulSample }) {
   if (!STALE_PRUNE_SECONDS) return [];
+  if (!hadSuccessfulSample) return [];
   const cutoff = nowUnix - STALE_PRUNE_SECONDS;
   const dropped = [];
   for (const key of Object.keys(state.workers)) {
@@ -308,6 +320,7 @@ async function main() {
   let totalSamples = 0;
   let lastSampleUnix = 0;
   let lastWorkerCount = 0;
+  let hadSuccessfulSample = false;
 
   for (let i = 0; i < SAMPLES_PER_RUN; i++) {
     let data;
@@ -331,6 +344,7 @@ async function main() {
     totalSamples += 1;
     lastSampleUnix = sampleUnix;
     lastWorkerCount = recorded;
+    hadSuccessfulSample = true;
     console.log(
       `[record-models] sample ${i + 1}/${SAMPLES_PER_RUN}: ${recorded} workers @ ${utcDay(sampleUnix)} (${sampleUnix})`
     );
@@ -349,7 +363,11 @@ async function main() {
     );
   }
 
-  const dropped = pruneStaleWorkers(state, lastSampleUnix || Math.floor(Date.now() / 1000));
+  const dropped = pruneStaleWorkers(
+    state,
+    lastSampleUnix || Math.floor(Date.now() / 1000),
+    { hadSuccessfulSample },
+  );
   if (dropped.length) {
     console.log(
       `[record-models] pruned ${dropped.length} stale workers (no /health entry for ${STALE_PRUNE_SECONDS}s): ${dropped.join(", ")}`
