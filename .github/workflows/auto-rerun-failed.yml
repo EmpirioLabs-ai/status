@@ -1,0 +1,49 @@
+name: Auto-rerun failed workflows
+# When one of the status-site workflows fails on a transient GitHub-side
+# issue (codeload.github.com returning ECONNRESET on action downloads,
+# actions/deploy-pages getting a 500 from the GitHub Pages API,
+# ephemeral runner network blips, etc.) this workflow waits a minute and
+# re-runs only the failed jobs. Caps at 3 attempts so a genuinely broken
+# workflow does not loop forever.
+#
+# Why this is needed: GitHub Actions does NOT retry `uses:` steps. If
+# the action archive download fails on the first try the whole job is
+# marked failed and the repo owner gets an email. The actual status
+# page would self-heal on the next 5-minute Uptime CI tick, but the
+# email noise made it look like the site was broken.
+on:
+  workflow_run:
+    workflows:
+      - "Uptime CI"
+      - "Static Site CI"
+      - "Response Time CI"
+      - "Summary CI"
+      - "Models History CI"
+      - "Sites History CI"
+      - "Setup CI"
+    types:
+      - completed
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  rerun-on-failure:
+    if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt < 3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rerun failed jobs after short delay
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Workflow '$WORKFLOW_NAME' (run $RUN_ID, attempt $RUN_ATTEMPT) failed."
+          # Brief delay lets transient GitHub Pages / Codeload / runner
+          # network issues clear before we retry.
+          sleep 60
+          gh run rerun "$RUN_ID" --failed --repo "$REPO"
+          echo "Triggered rerun of failed jobs for run $RUN_ID."
