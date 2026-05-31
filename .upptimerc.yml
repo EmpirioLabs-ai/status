@@ -28,6 +28,13 @@ sites:
     __dangerous__body_down_if_text_missing: '"service":"gateway"'
     icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
 
+  - name: GPU Cloud
+    url: https://api.empiriolabs.ai/v1/gpu/catalog
+    slug: gpu-cloud
+    expectedStatusCodes: [200]
+    __dangerous__body_down_if_text_missing: '"object":"list"'
+    icon: https://cdn.prod.website-files.com/69ab23187be9f707e474231f/69cfc254049b250db00ca9e9_32x32.png
+
 status-website:
   cname: status.empiriolabs.ai
   baseUrl: /
