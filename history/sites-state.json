@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "updated_at": 1780444568,
+  "updated_at": 1780444851,
   "sites": {
     "agents": {
       "name": "Hosted Agents",
       "url": "https://api.empiriolabs.ai/v1/hosted-agents/health",
       "first_seen": 1780222575,
-      "last_seen": 1780444568,
+      "last_seen": 1780444851,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 604,
+      "last_latency_ms": 141,
       "last_error": null,
       "buckets": {
         "2026-05-31": {
@@ -32,6 +32,13 @@
           "down": 0,
           "lat_sum": 72236,
           "lat_count": 293
+        },
+        "2026-06-03": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 141,
+          "lat_count": 1
         }
       }
     },
@@ -39,10 +46,10 @@
       "name": "API Gateway",
       "url": "https://api.empiriolabs.ai/livez",
       "first_seen": 1776954273,
-      "last_seen": 1780444568,
+      "last_seen": 1780444851,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 492,
+      "last_latency_ms": 71,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -331,6 +338,13 @@
           "down": 0,
           "lat_sum": 51625,
           "lat_count": 293
+        },
+        "2026-06-03": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 71,
+          "lat_count": 1
         }
       }
     },
@@ -338,10 +352,10 @@
       "name": "Documentation",
       "url": "https://docs.empiriolabs.ai",
       "first_seen": 1776954273,
-      "last_seen": 1780444568,
+      "last_seen": 1780444851,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 689,
+      "last_latency_ms": 242,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -630,6 +644,13 @@
           "down": 1,
           "lat_sum": 88726,
           "lat_count": 292
+        },
+        "2026-06-03": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 242,
+          "lat_count": 1
         }
       }
     },
@@ -637,10 +658,10 @@
       "name": "GPU Cloud",
       "url": "https://api.empiriolabs.ai/v1/gpu/catalog",
       "first_seen": 1780220775,
-      "last_seen": 1780444568,
+      "last_seen": 1780444851,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 612,
+      "last_latency_ms": 117,
       "last_error": null,
       "buckets": {
         "2026-05-31": {
@@ -663,6 +684,13 @@
           "down": 0,
           "lat_sum": 66714,
           "lat_count": 293
+        },
+        "2026-06-03": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 117,
+          "lat_count": 1
         }
       }
     },
@@ -670,10 +698,10 @@
       "name": "Models",
       "url": "https://api.empiriolabs.ai/health",
       "first_seen": 1776954273,
-      "last_seen": 1780444568,
+      "last_seen": 1780444851,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 562,
+      "last_latency_ms": 89,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -962,6 +990,13 @@
           "down": 0,
           "lat_sum": 67906,
           "lat_count": 293
+        },
+        "2026-06-03": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 89,
+          "lat_count": 1
         }
       }
     },
@@ -969,10 +1004,10 @@
       "name": "Website",
       "url": "https://empiriolabs.ai",
       "first_seen": 1776954273,
-      "last_seen": 1780444568,
+      "last_seen": 1780444851,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 1369,
+      "last_latency_ms": 1332,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -1261,6 +1296,13 @@
           "down": 1,
           "lat_sum": 178168,
           "lat_count": 292
+        },
+        "2026-06-03": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 1332,
+          "lat_count": 1
         }
       }
     }
