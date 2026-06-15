@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "updated_at": 1781481392,
+  "updated_at": 1781481685,
   "sites": {
     "agents": {
       "name": "Hosted Agents",
       "url": "https://api.empiriolabs.ai/v1/hosted-agents/health",
       "first_seen": 1780222575,
-      "last_seen": 1781481392,
+      "last_seen": 1781481685,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 983,
+      "last_latency_ms": 963,
       "last_error": null,
       "buckets": {
         "2026-05-31": {
@@ -116,6 +116,13 @@
           "down": 0,
           "lat_sum": 285472,
           "lat_count": 295
+        },
+        "2026-06-15": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 963,
+          "lat_count": 1
         }
       }
     },
@@ -123,10 +130,10 @@
       "name": "API Gateway",
       "url": "https://api.empiriolabs.ai/livez",
       "first_seen": 1776954273,
-      "last_seen": 1781481392,
+      "last_seen": 1781481685,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 945,
+      "last_latency_ms": 936,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -499,6 +506,13 @@
           "down": 0,
           "lat_sum": 264703,
           "lat_count": 295
+        },
+        "2026-06-15": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 936,
+          "lat_count": 1
         }
       }
     },
@@ -506,10 +520,10 @@
       "name": "Documentation",
       "url": "https://docs.empiriolabs.ai",
       "first_seen": 1776954273,
-      "last_seen": 1781481392,
+      "last_seen": 1781481685,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 368,
+      "last_latency_ms": 341,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -882,6 +896,13 @@
           "down": 0,
           "lat_sum": 90843,
           "lat_count": 295
+        },
+        "2026-06-15": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 341,
+          "lat_count": 1
         }
       }
     },
@@ -889,10 +910,10 @@
       "name": "GPU Cloud",
       "url": "https://api.empiriolabs.ai/v1/gpu/catalog",
       "first_seen": 1780220775,
-      "last_seen": 1781481392,
+      "last_seen": 1781481685,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 982,
+      "last_latency_ms": 951,
       "last_error": null,
       "buckets": {
         "2026-05-31": {
@@ -999,6 +1020,13 @@
           "down": 0,
           "lat_sum": 279746,
           "lat_count": 295
+        },
+        "2026-06-15": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 951,
+          "lat_count": 1
         }
       }
     },
@@ -1006,10 +1034,10 @@
       "name": "Models",
       "url": "https://api.empiriolabs.ai/health",
       "first_seen": 1776954273,
-      "last_seen": 1781481392,
+      "last_seen": 1781481685,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 946,
+      "last_latency_ms": 927,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -1382,6 +1410,13 @@
           "down": 0,
           "lat_sum": 274613,
           "lat_count": 295
+        },
+        "2026-06-15": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 927,
+          "lat_count": 1
         }
       }
     },
@@ -1389,10 +1424,10 @@
       "name": "Website",
       "url": "https://empiriolabs.ai",
       "first_seen": 1776954273,
-      "last_seen": 1781481392,
+      "last_seen": 1781481685,
       "last_status": "up",
       "last_code": 200,
-      "last_latency_ms": 1085,
+      "last_latency_ms": 1230,
       "last_error": null,
       "buckets": {
         "2026-04-23": {
@@ -1765,6 +1800,13 @@
           "down": 0,
           "lat_sum": 312815,
           "lat_count": 295
+        },
+        "2026-06-15": {
+          "checks": 1,
+          "up": 1,
+          "down": 0,
+          "lat_sum": 1230,
+          "lat_count": 1
         }
       }
     }
