@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "updated_at": 1782981380,
+  "updated_at": 1782982142,
   "sites": {
     "agents": {
       "name": "Hosted Agents",
       "url": "https://api.empiriolabs.ai/v1/hosted-agents/health",
       "first_seen": 1780222575,
-      "last_seen": 1782981380,
+      "last_seen": 1782982142,
       "last_status": "down",
       "last_code": 0,
-      "last_latency_ms": 15002,
-      "last_error": "Timeout",
+      "last_latency_ms": 10500,
+      "last_error": "fetch failed",
       "buckets": {
         "2026-05-31": {
           "checks": 173,
@@ -237,9 +237,9 @@
           "lat_count": 294
         },
         "2026-07-02": {
-          "checks": 106,
+          "checks": 107,
           "up": 105,
-          "down": 1,
+          "down": 2,
           "lat_sum": 22478,
           "lat_count": 105
         }
@@ -249,11 +249,11 @@
       "name": "API Gateway",
       "url": "https://api.empiriolabs.ai/livez",
       "first_seen": 1776954273,
-      "last_seen": 1782981380,
-      "last_status": "up",
-      "last_code": 200,
-      "last_latency_ms": 209,
-      "last_error": null,
+      "last_seen": 1782982142,
+      "last_status": "down",
+      "last_code": 0,
+      "last_latency_ms": 10404,
+      "last_error": "fetch failed",
       "buckets": {
         "2026-04-23": {
           "checks": 19,
@@ -746,9 +746,9 @@
           "lat_count": 294
         },
         "2026-07-02": {
-          "checks": 106,
+          "checks": 107,
           "up": 106,
-          "down": 0,
+          "down": 1,
           "lat_sum": 17439,
           "lat_count": 106
         }
@@ -758,11 +758,11 @@
       "name": "Documentation",
       "url": "https://docs.empiriolabs.ai",
       "first_seen": 1776954273,
-      "last_seen": 1782981380,
-      "last_status": "up",
-      "last_code": 200,
-      "last_latency_ms": 328,
-      "last_error": null,
+      "last_seen": 1782982142,
+      "last_status": "down",
+      "last_code": 0,
+      "last_latency_ms": 10504,
+      "last_error": "fetch failed",
       "buckets": {
         "2026-04-23": {
           "checks": 19,
@@ -1255,9 +1255,9 @@
           "lat_count": 294
         },
         "2026-07-02": {
-          "checks": 106,
+          "checks": 107,
           "up": 106,
-          "down": 0,
+          "down": 1,
           "lat_sum": 26254,
           "lat_count": 106
         }
@@ -1267,11 +1267,11 @@
       "name": "GPU Cloud",
       "url": "https://api.empiriolabs.ai/v1/gpu/catalog",
       "first_seen": 1780220775,
-      "last_seen": 1782981380,
-      "last_status": "up",
-      "last_code": 200,
-      "last_latency_ms": 10289,
-      "last_error": null,
+      "last_seen": 1782982142,
+      "last_status": "down",
+      "last_code": 0,
+      "last_latency_ms": 10501,
+      "last_error": "fetch failed",
       "buckets": {
         "2026-05-31": {
           "checks": 179,
@@ -1498,9 +1498,9 @@
           "lat_count": 294
         },
         "2026-07-02": {
-          "checks": 106,
+          "checks": 107,
           "up": 106,
-          "down": 0,
+          "down": 1,
           "lat_sum": 31957,
           "lat_count": 106
         }
@@ -1510,11 +1510,11 @@
       "name": "Models",
       "url": "https://api.empiriolabs.ai/health",
       "first_seen": 1776954273,
-      "last_seen": 1782981380,
-      "last_status": "up",
-      "last_code": 200,
-      "last_latency_ms": 7464,
-      "last_error": null,
+      "last_seen": 1782982142,
+      "last_status": "down",
+      "last_code": 0,
+      "last_latency_ms": 10502,
+      "last_error": "fetch failed",
       "buckets": {
         "2026-04-23": {
           "checks": 19,
@@ -2007,9 +2007,9 @@
           "lat_count": 294
         },
         "2026-07-02": {
-          "checks": 106,
+          "checks": 107,
           "up": 106,
-          "down": 0,
+          "down": 1,
           "lat_sum": 26467,
           "lat_count": 106
         }
@@ -2019,11 +2019,11 @@
       "name": "Website",
       "url": "https://empiriolabs.ai",
       "first_seen": 1776954273,
-      "last_seen": 1782981380,
-      "last_status": "up",
-      "last_code": 200,
-      "last_latency_ms": 1418,
-      "last_error": null,
+      "last_seen": 1782982142,
+      "last_status": "down",
+      "last_code": 0,
+      "last_latency_ms": 2107,
+      "last_error": "fetch failed",
       "buckets": {
         "2026-04-23": {
           "checks": 19,
@@ -2516,9 +2516,9 @@
           "lat_count": 294
         },
         "2026-07-02": {
-          "checks": 106,
+          "checks": 107,
           "up": 106,
-          "down": 0,
+          "down": 1,
           "lat_sum": 38163,
           "lat_count": 106
         }
