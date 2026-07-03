@@ -77,7 +77,9 @@ function incidentTimeline(body, maxItems = 5) {
     .replace(/<!--\s*status-incident\s*[\s\S]*?-->/gi, "")
     .split(/\r?\n/);
   const start = lines.findIndex((line) => /^timeline\b/i.test(line.trim()));
-  if (start === -1) return [];
+  if (start === -1) return { label: "", items: [] };
+  const label =
+    lines[start].trim().match(/^timeline\s*\(([^)]+)\)/i)?.[1]?.trim() || "";
 
   const items = [];
   for (const line of lines.slice(start + 1)) {
@@ -99,7 +101,7 @@ function incidentTimeline(body, maxItems = 5) {
     });
     if (items.length >= maxItems) break;
   }
-  return items;
+  return { label, items };
 }
 
 // Fetch incidents (GitHub issues with the "status" label) at build time.
@@ -532,7 +534,7 @@ function fmtDate(iso) {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: "America/Los_Angeles",
     timeZoneName: "short",
   });
 }
@@ -559,13 +561,17 @@ function renderIncidentsSection(incidents) {
       const summary = i.summary
         ? `<p class="incident-summary">${escapeHtml(i.summary)}</p>`
         : "";
-      const timeline = Array.isArray(i.timeline) && i.timeline.length
+      const timelineItems = i.timeline?.items || [];
+      const timelineLabel = i.timeline?.label
+        ? `Incident timeline (${i.timeline.label})`
+        : "Incident timeline";
+      const timeline = timelineItems.length
         ? `<div class="incident-details">
             <div class="incident-details-header">
-              <span>Incident timeline</span>
-              <span>${i.timeline.length === 1 ? "1 update" : `${i.timeline.length} updates`}</span>
+              <span>${escapeHtml(timelineLabel)}</span>
+              <span>${timelineItems.length === 1 ? "1 update" : `${timelineItems.length} updates`}</span>
             </div>
-            <ol class="incident-note-list">${i.timeline
+            <ol class="incident-note-list">${timelineItems
               .map(
                 (item) => `
               <li class="incident-note">

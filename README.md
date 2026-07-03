@@ -30,10 +30,10 @@ The status page shows the issue title, timing, duration, and the first
 non-metadata paragraph from the issue body. Keep that first paragraph concise
 and customer-safe.
 
-If the issue body includes a `Timeline` section with bullet items, those items
-render as quiet timestamped notes inside the incident card. Keep timeline notes
-short and customer-safe; full incident discussion still lives in the GitHub
-issue/comments.
+If the issue body includes a `Timeline (<timezone>)` section with bullet items,
+those items render as quiet timestamped notes inside the incident card, and the
+timezone label is shown in the timeline heading. Keep timeline notes short and
+customer-safe; full incident discussion still lives in the GitHub issue/comments.
 
 ## License
 
