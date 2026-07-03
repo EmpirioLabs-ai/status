@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Custom Poe-style status page generator.
+// Custom EmpirioLabs status page generator.
 // Reads .upptimerc.yml + history/*.yml + git log to build a static index.html.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, copyFileSync } from "node:fs";
