@@ -40,6 +40,8 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Build site
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: npm run build
       - name: GitHub Pages Deploy
         uses: peaceiris/actions-gh-pages@v4
