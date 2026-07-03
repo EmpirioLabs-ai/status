@@ -26,14 +26,10 @@ Use only timestamps that are confirmed as the incident start and recovery
 window. If a later message is just a follow-up confirmation, keep it in the
 issue timeline but do not use it as `resolved_at`.
 
-The status page shows the issue title, timing, duration, and the first
+The status page shows only the issue title, timing, duration, and the first
 non-metadata paragraph from the issue body. Keep that first paragraph concise
-and customer-safe; put longer timeline detail below it.
-
-If the issue body includes a `Timeline` section with bullet items, those items
-render as a compact `Updates` panel on the status page, with state labels,
-customer-safe update text, and timestamps. Full incident discussion and
-Upptime-generated updates still live in the GitHub issue/comments.
+and customer-safe. Put detailed timeline notes below it in the GitHub issue,
+not on the main status page.
 
 ## License
 

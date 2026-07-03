@@ -64,44 +64,6 @@ function incidentSummary(body, maxLength = 220) {
   return `${clipped}...`;
 }
 
-function cleanIncidentMarkdown(text) {
-  return String(text || "")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/[*_`>#]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function incidentTimeline(body, maxItems = 5) {
-  const lines = String(body || "")
-    .replace(/<!--\s*status-incident\s*[\s\S]*?-->/gi, "")
-    .split(/\r?\n/);
-  const start = lines.findIndex((line) => /^timeline\b/i.test(line.trim()));
-  if (start === -1) return [];
-
-  const items = [];
-  for (const line of lines.slice(start + 1)) {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      if (items.length) break;
-      continue;
-    }
-    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
-    if (!bullet) {
-      if (items.length) break;
-      continue;
-    }
-    const text = cleanIncidentMarkdown(bullet[1]);
-    const split = text.match(/^(.+?):\s+(.+)$/);
-    items.push({
-      time: split ? split[1] : "",
-      detail: split ? split[2] : text,
-    });
-    if (items.length >= maxItems) break;
-  }
-  return items;
-}
-
 // Fetch incidents (GitHub issues with the "status" label) at build time.
 // Public repo, so no auth needed; if `gh` is available we use it, otherwise
 // fall back to plain HTTPS. Returns newest first.
@@ -132,7 +94,6 @@ function loadIncidents(owner, repo, label = "status", limit = 25) {
           closedAt,
           body,
           summary: incidentSummary(body),
-          timeline: incidentTimeline(body),
           url: i.url,
         };
       })
@@ -559,36 +520,6 @@ function renderIncidentsSection(incidents) {
       const summary = i.summary
         ? `<p class="incident-summary">${escapeHtml(i.summary)}</p>`
         : "";
-      const updates = Array.isArray(i.timeline) && i.timeline.length
-        ? `<div class="incident-updates" aria-label="Incident updates">
-            <div class="incident-updates-header">
-              <span>Updates</span>
-              <span>${i.timeline.length === 1 ? "1 update" : `${i.timeline.length} updates`}</span>
-            </div>
-            <ol class="incident-update-list">${i.timeline
-            .map((item, idx, arr) => {
-              const eventState =
-                idx === 0
-                  ? "start"
-                  : !open && idx === arr.length - 1
-                  ? "resolved"
-                  : "update";
-              const updateLabel =
-                eventState === "start"
-                  ? "Reported"
-                  : eventState === "resolved"
-                  ? "Resolved"
-                  : "Update";
-              return `
-              <li class="incident-update incident-update-${eventState}">
-                <span class="incident-update-state">${updateLabel}</span>
-                <span class="incident-update-detail">${escapeHtml(item.detail)}</span>
-                ${item.time ? `<span class="incident-update-time">${escapeHtml(item.time)}</span>` : ""}
-              </li>`;
-            })
-            .join("")}</ol>
-          </div>`
-        : "";
       return `
         <li class="incident ${cls}">
           <div class="incident-head">
@@ -596,7 +527,6 @@ function renderIncidentsSection(incidents) {
             <a class="incident-title" href="${escapeHtml(i.url)}" target="_blank" rel="noopener">${escapeHtml(i.title)}</a>
           </div>
           ${summary}
-          ${updates}
           <div class="incident-meta">
             <span>${escapeHtml(fmtDate(i.createdAt))}</span>
             <span aria-hidden="true">&middot;</span>
@@ -1056,68 +986,6 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   .incident-title { font-weight: 500; color: #e6edf6; font-size: 0.95rem; text-decoration: none; }
   .incident-title:hover { color: #7db7ff; }
   .incident-summary { color: #a8b3c7; font-size: 0.88rem; line-height: 1.55; max-width: 72ch; margin: 0 0 12px; }
-  .incident-updates {
-    margin: 0 0 12px;
-    border: 1px solid #10203a;
-    border-radius: 8px;
-    background: rgba(0, 8, 21, 0.28);
-    overflow: hidden;
-  }
-  .incident-updates-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 10px;
-    border-bottom: 1px solid #10203a;
-    color: #6b7790;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .incident-update-list { list-style: none; padding: 0; margin: 0; }
-  .incident-update {
-    display: grid;
-    grid-template-columns: 82px minmax(0, 1fr) minmax(0, 150px);
-    align-items: baseline;
-    gap: 12px;
-    padding: 10px;
-    border-bottom: 1px solid #0e1a31;
-  }
-  .incident-update:last-child { border-bottom: 0; }
-  .incident-update-state {
-    justify-self: start;
-    border-radius: 4px;
-    padding: 2px 6px;
-    background: rgba(74,155,255,0.11);
-    color: #7db7ff;
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    line-height: 1.3;
-    text-transform: uppercase;
-  }
-  .incident-update-start .incident-update-state {
-    background: rgba(255,181,71,0.13);
-    color: #ffbf66;
-  }
-  .incident-update-resolved .incident-update-state {
-    background: rgba(30,214,136,0.13);
-    color: #4be5a3;
-  }
-  .incident-update-detail {
-    min-width: 0;
-    color: #a8b3c7;
-    font-size: 0.82rem;
-    line-height: 1.45;
-  }
-  .incident-update-time {
-    color: #6b7790;
-    font-size: 0.74rem;
-    line-height: 1.45;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
   .incident-meta a { color: #7db7ff; text-decoration: none; }
   .incident-meta a:hover { text-decoration: underline; }
@@ -1308,14 +1176,6 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     .sub-pop a.option { min-height: 44px; }
     .bars { height: 28px; }
     .bars-axis { font-size: 0.68rem; }
-    .incident-update {
-      grid-template-columns: 1fr;
-      gap: 6px;
-      align-items: start;
-    }
-    .incident-update-time {
-      text-align: left;
-    }
   }
 </style>
 </head>
