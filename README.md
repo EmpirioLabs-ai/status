@@ -22,6 +22,10 @@ resolved_at: 2026-05-20T15:15:00Z
 -->
 ```
 
+Use only timestamps that are confirmed as the incident start and recovery
+window. If a later message is just a follow-up confirmation, keep it in the
+issue timeline but do not use it as `resolved_at`.
+
 ## License
 
 This repository is published in public form for operational
