@@ -26,6 +26,24 @@ function loadConfig() {
   return yaml.load(raw);
 }
 
+function parseIncidentMetadata(body) {
+  const text = body || "";
+  const block = text.match(/<!--\s*status-incident\s*([\s\S]*?)-->/i);
+  if (!block) return {};
+  try {
+    return yaml.load(block[1]) || {};
+  } catch {
+    return {};
+  }
+}
+
+function normalizeIncidentDate(value, fallback) {
+  if (!value) return fallback || null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return fallback || null;
+  return d.toISOString();
+}
+
 // Fetch incidents (GitHub issues with the "status" label) at build time.
 // Public repo, so no auth needed; if `gh` is available we use it, otherwise
 // fall back to plain HTTPS. Returns newest first.
@@ -36,15 +54,29 @@ function loadIncidents(owner, repo, label = "status", limit = 25) {
       { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] }
     );
     const arr = JSON.parse(json);
-    return arr.map((i) => ({
-      number: i.number,
-      title: i.title,
-      state: i.state, // OPEN | CLOSED
-      createdAt: i.createdAt,
-      closedAt: i.closedAt,
-      body: i.body || "",
-      url: i.url,
-    }));
+    return arr
+      .map((i) => {
+        const body = i.body || "";
+        const meta = parseIncidentMetadata(body);
+        const createdAt = normalizeIncidentDate(
+          meta.started_at || meta.startedAt,
+          i.createdAt
+        );
+        const closedAt = normalizeIncidentDate(
+          meta.resolved_at || meta.resolvedAt,
+          i.closedAt
+        );
+        return {
+          number: i.number,
+          title: i.title,
+          state: i.state, // OPEN | CLOSED
+          createdAt,
+          closedAt,
+          body,
+          url: i.url,
+        };
+      })
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch {
     return [];
   }
