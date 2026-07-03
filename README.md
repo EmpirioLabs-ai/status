@@ -26,6 +26,10 @@ Use only timestamps that are confirmed as the incident start and recovery
 window. If a later message is just a follow-up confirmation, keep it in the
 issue timeline but do not use it as `resolved_at`.
 
+The status page shows the issue title, timing, duration, and the first
+non-metadata paragraph from the issue body. Keep that first paragraph concise
+and customer-safe; put longer timeline detail below it.
+
 ## License
 
 This repository is published in public form for operational

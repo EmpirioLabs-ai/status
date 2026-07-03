@@ -44,6 +44,26 @@ function normalizeIncidentDate(value, fallback) {
   return d.toISOString();
 }
 
+function incidentSummary(body, maxLength = 220) {
+  const text = String(body || "")
+    .replace(/<!--\s*status-incident\s*[\s\S]*?-->/gi, "")
+    .replace(/```[\s\S]*?```/g, "")
+    .split(/\n\s*\n/)
+    .map((part) =>
+      part
+        .replace(/^[-*]\s+/gm, "")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/[*_`>#]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+    )
+    .find(Boolean);
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  const clipped = text.slice(0, maxLength - 1).replace(/\s+\S*$/, "");
+  return `${clipped}...`;
+}
+
 // Fetch incidents (GitHub issues with the "status" label) at build time.
 // Public repo, so no auth needed; if `gh` is available we use it, otherwise
 // fall back to plain HTTPS. Returns newest first.
@@ -73,8 +93,19 @@ function loadIncidents(owner, repo, label = "status", limit = 25) {
           createdAt,
           closedAt,
           body,
+          summary: incidentSummary(body),
           url: i.url,
         };
+      })
+      .filter((i) => {
+        if (i.state === "OPEN") return true;
+        const cutoff = Date.now() - HISTORY_DAYS * 24 * 60 * 60 * 1000;
+        const created = Date.parse(i.createdAt || "");
+        const closed = Date.parse(i.closedAt || "");
+        return (
+          (!Number.isNaN(created) && created >= cutoff) ||
+          (!Number.isNaN(closed) && closed >= cutoff)
+        );
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch {
@@ -486,25 +517,33 @@ function renderIncidentsSection(incidents) {
         : fmtDuration(new Date(i.closedAt) - new Date(i.createdAt));
       const cls = open ? "incident-open" : "incident-resolved";
       const label = open ? "Investigating" : "Resolved";
+      const summary = i.summary
+        ? `<p class="incident-summary">${escapeHtml(i.summary)}</p>`
+        : "";
       return `
         <li class="incident ${cls}">
           <div class="incident-head">
             <span class="incident-tag">${label}</span>
-            <span class="incident-title">${escapeHtml(i.title)}</span>
+            <a class="incident-title" href="${escapeHtml(i.url)}" target="_blank" rel="noopener">${escapeHtml(i.title)}</a>
           </div>
+          ${summary}
           <div class="incident-meta">
             <span>${escapeHtml(fmtDate(i.createdAt))}</span>
-            <span>·</span>
+            <span aria-hidden="true">&middot;</span>
             <span>Duration: ${escapeHtml(dur)}</span>
+            <span aria-hidden="true">&middot;</span>
+            <a href="${escapeHtml(i.url)}" target="_blank" rel="noopener">View details</a>
           </div>
         </li>`;
     })
     .join("");
+  const incidentLabel =
+    incidents.length === 1 ? "1 incident" : `${incidents.length} incidents`;
   return `
     <section class="card">
       <div class="card-header">
         <span>Past incidents</span>
-        <span class="card-range">Most recent ${incidents.length}</span>
+        <span class="card-range">${incidentLabel} in last 90 days</span>
       </div>
       <ul class="incident-list">${items}</ul>
     </section>`;
@@ -944,8 +983,12 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     background: rgba(255,77,106,0.18);
     color: #ff4d6a;
   }
-  .incident-title { font-weight: 500; color: #e6edf6; font-size: 0.95rem; }
+  .incident-title { font-weight: 500; color: #e6edf6; font-size: 0.95rem; text-decoration: none; }
+  .incident-title:hover { color: #7db7ff; }
+  .incident-summary { color: #a8b3c7; font-size: 0.88rem; line-height: 1.55; max-width: 72ch; margin: 0 0 8px; }
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
+  .incident-meta a { color: #7db7ff; text-decoration: none; }
+  .incident-meta a:hover { text-decoration: underline; }
   .empty { color: #6b7790; font-size: 0.9rem; padding: 4px 0; }
 
   /* live workers */
