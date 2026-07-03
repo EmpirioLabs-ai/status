@@ -560,14 +560,23 @@ function renderIncidentsSection(incidents) {
         ? `<p class="incident-summary">${escapeHtml(i.summary)}</p>`
         : "";
       const timeline = Array.isArray(i.timeline) && i.timeline.length
-        ? `<ol class="incident-timeline">${i.timeline
-            .map(
-              (item) => `
-              <li>
-                ${item.time ? `<span class="incident-time">${escapeHtml(item.time)}</span>` : ""}
-                <span>${escapeHtml(item.detail)}</span>
-              </li>`
-            )
+        ? `<ol class="incident-timeline" aria-label="Incident timeline">${i.timeline
+            .map((item, idx, arr) => {
+              const eventState =
+                idx === 0
+                  ? "start"
+                  : !open && idx === arr.length - 1
+                  ? "resolved"
+                  : "update";
+              return `
+              <li class="incident-event incident-event-${eventState}">
+                <span class="incident-event-marker" aria-hidden="true"></span>
+                <div class="incident-event-content">
+                  ${item.time ? `<span class="incident-time">${escapeHtml(item.time)}</span>` : ""}
+                  <span class="incident-detail">${escapeHtml(item.detail)}</span>
+                </div>
+              </li>`;
+            })
             .join("")}</ol>`
         : "";
       return `
@@ -1036,10 +1045,82 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   }
   .incident-title { font-weight: 500; color: #e6edf6; font-size: 0.95rem; text-decoration: none; }
   .incident-title:hover { color: #7db7ff; }
-  .incident-summary { color: #a8b3c7; font-size: 0.88rem; line-height: 1.55; max-width: 72ch; margin: 0 0 8px; }
-  .incident-timeline { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 5px; color: #8a96b0; font-size: 0.8rem; line-height: 1.45; }
-  .incident-timeline li { display: grid; grid-template-columns: minmax(0, 170px) 1fr; gap: 10px; align-items: baseline; }
-  .incident-time { color: #c2cbda; font-variant-numeric: tabular-nums; }
+  .incident-summary { color: #a8b3c7; font-size: 0.88rem; line-height: 1.55; max-width: 72ch; margin: 0 0 12px; }
+  .incident-timeline {
+    list-style: none;
+    padding: 2px 0;
+    margin: 0 0 12px;
+    color: #8a96b0;
+  }
+  .incident-event {
+    position: relative;
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 42px;
+  }
+  .incident-event::before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 18px;
+    bottom: -8px;
+    width: 1px;
+    background: #14233f;
+  }
+  .incident-event:last-child { min-height: 0; }
+  .incident-event:last-child::before { display: none; }
+  .incident-event-marker {
+    position: relative;
+    z-index: 1;
+    width: 15px;
+    height: 15px;
+    margin-top: 4px;
+    border-radius: 999px;
+    border: 1px solid #263a60;
+    background: #08172f;
+    box-shadow: 0 0 0 4px #060f22;
+  }
+  .incident-event-start .incident-event-marker {
+    border-color: rgba(255,181,71,0.70);
+    background: #ffb547;
+    box-shadow: 0 0 0 4px #060f22, 0 0 16px rgba(255,181,71,0.22);
+  }
+  .incident-event-update .incident-event-marker {
+    border-color: rgba(74,155,255,0.70);
+    background: #4a9bff;
+    box-shadow: 0 0 0 4px #060f22, 0 0 16px rgba(74,155,255,0.18);
+  }
+  .incident-event-resolved .incident-event-marker {
+    border-color: rgba(30,214,136,0.75);
+    background: #1ed688;
+    box-shadow: 0 0 0 4px #060f22, 0 0 16px rgba(30,214,136,0.22);
+  }
+  .incident-event-content {
+    min-width: 0;
+    padding: 0 0 12px;
+    border-bottom: 1px solid rgba(20,35,63,0.65);
+  }
+  .incident-event:last-child .incident-event-content {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .incident-time {
+    display: block;
+    color: #c2cbda;
+    font-size: 0.76rem;
+    font-weight: 500;
+    line-height: 1.25;
+    margin-bottom: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .incident-detail {
+    display: block;
+    color: #9aa7bd;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    max-width: 68ch;
+  }
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
   .incident-meta a { color: #7db7ff; text-decoration: none; }
   .incident-meta a:hover { text-decoration: underline; }
@@ -1230,7 +1311,19 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     .sub-pop a.option { min-height: 44px; }
     .bars { height: 28px; }
     .bars-axis { font-size: 0.68rem; }
-    .incident-timeline li { grid-template-columns: 1fr; gap: 1px; }
+    .incident-event {
+      grid-template-columns: 14px minmax(0, 1fr);
+      gap: 10px;
+      min-height: 40px;
+    }
+    .incident-event::before {
+      left: 6px;
+    }
+    .incident-event-marker {
+      width: 13px;
+      height: 13px;
+      margin-top: 5px;
+    }
   }
 </style>
 </head>

@@ -18,7 +18,7 @@ of the GitHub issue creation time:
 ```markdown
 <!-- status-incident
 started_at: 2026-05-19T23:03:00Z
-resolved_at: 2026-05-20T15:15:00Z
+resolved_at: 2026-05-20T02:28:00Z
 -->
 ```
 
@@ -31,8 +31,9 @@ non-metadata paragraph from the issue body. Keep that first paragraph concise
 and customer-safe; put longer timeline detail below it.
 
 If the issue body includes a `Timeline` section with bullet items, those items
-render as a compact timeline on the status page. Full incident discussion and
-Upptime-generated updates still live in the GitHub issue/comments.
+render as a compact event timeline with start, update, and resolved markers on
+the status page. Full incident discussion and Upptime-generated updates still
+live in the GitHub issue/comments.
 
 ## License
 
