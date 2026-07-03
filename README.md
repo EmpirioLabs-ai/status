@@ -31,9 +31,9 @@ non-metadata paragraph from the issue body. Keep that first paragraph concise
 and customer-safe; put longer timeline detail below it.
 
 If the issue body includes a `Timeline` section with bullet items, those items
-render as a compact event timeline with start, update, and resolved markers on
-the status page. Full incident discussion and Upptime-generated updates still
-live in the GitHub issue/comments.
+render as a compact update log with start, update, and resolved markers on the
+status page. Full incident discussion and Upptime-generated updates still live
+in the GitHub issue/comments.
 
 ## License
 

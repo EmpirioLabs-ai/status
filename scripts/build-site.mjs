@@ -1048,77 +1048,54 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   .incident-summary { color: #a8b3c7; font-size: 0.88rem; line-height: 1.55; max-width: 72ch; margin: 0 0 12px; }
   .incident-timeline {
     list-style: none;
-    padding: 2px 0;
+    padding: 0;
     margin: 0 0 12px;
+    border-top: 1px solid #0e1a31;
     color: #8a96b0;
   }
   .incident-event {
-    position: relative;
     display: grid;
-    grid-template-columns: 16px minmax(0, 1fr);
-    gap: 12px;
-    min-height: 42px;
+    grid-template-columns: 10px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px solid #0e1a31;
   }
-  .incident-event::before {
-    content: "";
-    position: absolute;
-    left: 7px;
-    top: 18px;
-    bottom: -8px;
-    width: 1px;
-    background: #14233f;
-  }
-  .incident-event:last-child { min-height: 0; }
-  .incident-event:last-child::before { display: none; }
+  .incident-event:last-child { border-bottom: 0; padding-bottom: 0; }
   .incident-event-marker {
-    position: relative;
-    z-index: 1;
-    width: 15px;
-    height: 15px;
-    margin-top: 4px;
+    width: 7px;
+    height: 7px;
+    margin-top: 7px;
     border-radius: 999px;
-    border: 1px solid #263a60;
-    background: #08172f;
-    box-shadow: 0 0 0 4px #060f22;
+    background: #33415d;
   }
   .incident-event-start .incident-event-marker {
-    border-color: rgba(255,181,71,0.70);
     background: #ffb547;
-    box-shadow: 0 0 0 4px #060f22, 0 0 16px rgba(255,181,71,0.22);
   }
   .incident-event-update .incident-event-marker {
-    border-color: rgba(74,155,255,0.70);
     background: #4a9bff;
-    box-shadow: 0 0 0 4px #060f22, 0 0 16px rgba(74,155,255,0.18);
   }
   .incident-event-resolved .incident-event-marker {
-    border-color: rgba(30,214,136,0.75);
     background: #1ed688;
-    box-shadow: 0 0 0 4px #060f22, 0 0 16px rgba(30,214,136,0.22);
   }
   .incident-event-content {
     min-width: 0;
-    padding: 0 0 12px;
-    border-bottom: 1px solid rgba(20,35,63,0.65);
-  }
-  .incident-event:last-child .incident-event-content {
-    padding-bottom: 0;
-    border-bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
+    gap: 14px;
+    align-items: baseline;
   }
   .incident-time {
-    display: block;
-    color: #c2cbda;
+    color: #8a96b0;
     font-size: 0.76rem;
     font-weight: 500;
-    line-height: 1.25;
-    margin-bottom: 3px;
+    line-height: 1.4;
     font-variant-numeric: tabular-nums;
   }
   .incident-detail {
-    display: block;
     color: #9aa7bd;
     font-size: 0.82rem;
-    line-height: 1.5;
+    line-height: 1.45;
     max-width: 68ch;
   }
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
@@ -1312,17 +1289,15 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     .bars { height: 28px; }
     .bars-axis { font-size: 0.68rem; }
     .incident-event {
-      grid-template-columns: 14px minmax(0, 1fr);
-      gap: 10px;
-      min-height: 40px;
-    }
-    .incident-event::before {
-      left: 6px;
+      grid-template-columns: 10px minmax(0, 1fr);
     }
     .incident-event-marker {
-      width: 13px;
-      height: 13px;
-      margin-top: 5px;
+      width: 7px;
+      height: 7px;
+    }
+    .incident-event-content {
+      grid-template-columns: 1fr;
+      gap: 2px;
     }
   }
 </style>
