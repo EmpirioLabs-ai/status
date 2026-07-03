@@ -559,8 +559,13 @@ function renderIncidentsSection(incidents) {
       const summary = i.summary
         ? `<p class="incident-summary">${escapeHtml(i.summary)}</p>`
         : "";
-      const timeline = Array.isArray(i.timeline) && i.timeline.length
-        ? `<ol class="incident-timeline" aria-label="Incident timeline">${i.timeline
+      const updates = Array.isArray(i.timeline) && i.timeline.length
+        ? `<div class="incident-updates" aria-label="Incident updates">
+            <div class="incident-updates-header">
+              <span>Updates</span>
+              <span>${i.timeline.length === 1 ? "1 update" : `${i.timeline.length} updates`}</span>
+            </div>
+            <ol class="incident-update-list">${i.timeline
             .map((item, idx, arr) => {
               const eventState =
                 idx === 0
@@ -568,16 +573,21 @@ function renderIncidentsSection(incidents) {
                   : !open && idx === arr.length - 1
                   ? "resolved"
                   : "update";
+              const updateLabel =
+                eventState === "start"
+                  ? "Reported"
+                  : eventState === "resolved"
+                  ? "Resolved"
+                  : "Update";
               return `
-              <li class="incident-event incident-event-${eventState}">
-                <span class="incident-event-marker" aria-hidden="true"></span>
-                <div class="incident-event-content">
-                  ${item.time ? `<span class="incident-time">${escapeHtml(item.time)}</span>` : ""}
-                  <span class="incident-detail">${escapeHtml(item.detail)}</span>
-                </div>
+              <li class="incident-update incident-update-${eventState}">
+                <span class="incident-update-state">${updateLabel}</span>
+                <span class="incident-update-detail">${escapeHtml(item.detail)}</span>
+                ${item.time ? `<span class="incident-update-time">${escapeHtml(item.time)}</span>` : ""}
               </li>`;
             })
-            .join("")}</ol>`
+            .join("")}</ol>
+          </div>`
         : "";
       return `
         <li class="incident ${cls}">
@@ -586,7 +596,7 @@ function renderIncidentsSection(incidents) {
             <a class="incident-title" href="${escapeHtml(i.url)}" target="_blank" rel="noopener">${escapeHtml(i.title)}</a>
           </div>
           ${summary}
-          ${timeline}
+          ${updates}
           <div class="incident-meta">
             <span>${escapeHtml(fmtDate(i.createdAt))}</span>
             <span aria-hidden="true">&middot;</span>
@@ -1046,57 +1056,67 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   .incident-title { font-weight: 500; color: #e6edf6; font-size: 0.95rem; text-decoration: none; }
   .incident-title:hover { color: #7db7ff; }
   .incident-summary { color: #a8b3c7; font-size: 0.88rem; line-height: 1.55; max-width: 72ch; margin: 0 0 12px; }
-  .incident-timeline {
-    list-style: none;
-    padding: 0;
+  .incident-updates {
     margin: 0 0 12px;
-    border-top: 1px solid #0e1a31;
-    color: #8a96b0;
+    border: 1px solid #10203a;
+    border-radius: 8px;
+    background: rgba(0, 8, 21, 0.28);
+    overflow: hidden;
   }
-  .incident-event {
+  .incident-updates-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #10203a;
+    color: #6b7790;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .incident-update-list { list-style: none; padding: 0; margin: 0; }
+  .incident-update {
     display: grid;
-    grid-template-columns: 10px minmax(0, 1fr);
-    gap: 10px;
-    align-items: start;
-    padding: 10px 0;
+    grid-template-columns: 82px minmax(0, 1fr) minmax(0, 150px);
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px;
     border-bottom: 1px solid #0e1a31;
   }
-  .incident-event:last-child { border-bottom: 0; padding-bottom: 0; }
-  .incident-event-marker {
-    width: 7px;
-    height: 7px;
-    margin-top: 7px;
-    border-radius: 999px;
-    background: #33415d;
+  .incident-update:last-child { border-bottom: 0; }
+  .incident-update-state {
+    justify-self: start;
+    border-radius: 4px;
+    padding: 2px 6px;
+    background: rgba(74,155,255,0.11);
+    color: #7db7ff;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    text-transform: uppercase;
   }
-  .incident-event-start .incident-event-marker {
-    background: #ffb547;
+  .incident-update-start .incident-update-state {
+    background: rgba(255,181,71,0.13);
+    color: #ffbf66;
   }
-  .incident-event-update .incident-event-marker {
-    background: #4a9bff;
+  .incident-update-resolved .incident-update-state {
+    background: rgba(30,214,136,0.13);
+    color: #4be5a3;
   }
-  .incident-event-resolved .incident-event-marker {
-    background: #1ed688;
-  }
-  .incident-event-content {
+  .incident-update-detail {
     min-width: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 170px) minmax(0, 1fr);
-    gap: 14px;
-    align-items: baseline;
-  }
-  .incident-time {
-    color: #8a96b0;
-    font-size: 0.76rem;
-    font-weight: 500;
-    line-height: 1.4;
-    font-variant-numeric: tabular-nums;
-  }
-  .incident-detail {
-    color: #9aa7bd;
+    color: #a8b3c7;
     font-size: 0.82rem;
     line-height: 1.45;
-    max-width: 68ch;
+  }
+  .incident-update-time {
+    color: #6b7790;
+    font-size: 0.74rem;
+    line-height: 1.45;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
   .incident-meta a { color: #7db7ff; text-decoration: none; }
@@ -1288,16 +1308,13 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     .sub-pop a.option { min-height: 44px; }
     .bars { height: 28px; }
     .bars-axis { font-size: 0.68rem; }
-    .incident-event {
-      grid-template-columns: 10px minmax(0, 1fr);
-    }
-    .incident-event-marker {
-      width: 7px;
-      height: 7px;
-    }
-    .incident-event-content {
+    .incident-update {
       grid-template-columns: 1fr;
-      gap: 2px;
+      gap: 6px;
+      align-items: start;
+    }
+    .incident-update-time {
+      text-align: left;
     }
   }
 </style>
