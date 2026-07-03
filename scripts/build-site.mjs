@@ -64,6 +64,44 @@ function incidentSummary(body, maxLength = 220) {
   return `${clipped}...`;
 }
 
+function cleanIncidentMarkdown(text) {
+  return String(text || "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[*_`>#]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function incidentTimeline(body, maxItems = 5) {
+  const lines = String(body || "")
+    .replace(/<!--\s*status-incident\s*[\s\S]*?-->/gi, "")
+    .split(/\r?\n/);
+  const start = lines.findIndex((line) => /^timeline\b/i.test(line.trim()));
+  if (start === -1) return [];
+
+  const items = [];
+  for (const line of lines.slice(start + 1)) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (items.length) break;
+      continue;
+    }
+    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+    if (!bullet) {
+      if (items.length) break;
+      continue;
+    }
+    const text = cleanIncidentMarkdown(bullet[1]);
+    const split = text.match(/^(.+?):\s+(.+)$/);
+    items.push({
+      time: split ? split[1] : "",
+      detail: split ? split[2] : text,
+    });
+    if (items.length >= maxItems) break;
+  }
+  return items;
+}
+
 // Fetch incidents (GitHub issues with the "status" label) at build time.
 // Public repo, so no auth needed; if `gh` is available we use it, otherwise
 // fall back to plain HTTPS. Returns newest first.
@@ -94,6 +132,7 @@ function loadIncidents(owner, repo, label = "status", limit = 25) {
           closedAt,
           body,
           summary: incidentSummary(body),
+          timeline: incidentTimeline(body),
           url: i.url,
         };
       })
@@ -520,6 +559,17 @@ function renderIncidentsSection(incidents) {
       const summary = i.summary
         ? `<p class="incident-summary">${escapeHtml(i.summary)}</p>`
         : "";
+      const timeline = Array.isArray(i.timeline) && i.timeline.length
+        ? `<ol class="incident-timeline">${i.timeline
+            .map(
+              (item) => `
+              <li>
+                ${item.time ? `<span class="incident-time">${escapeHtml(item.time)}</span>` : ""}
+                <span>${escapeHtml(item.detail)}</span>
+              </li>`
+            )
+            .join("")}</ol>`
+        : "";
       return `
         <li class="incident ${cls}">
           <div class="incident-head">
@@ -527,6 +577,7 @@ function renderIncidentsSection(incidents) {
             <a class="incident-title" href="${escapeHtml(i.url)}" target="_blank" rel="noopener">${escapeHtml(i.title)}</a>
           </div>
           ${summary}
+          ${timeline}
           <div class="incident-meta">
             <span>${escapeHtml(fmtDate(i.createdAt))}</span>
             <span aria-hidden="true">&middot;</span>
@@ -986,6 +1037,9 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
   .incident-title { font-weight: 500; color: #e6edf6; font-size: 0.95rem; text-decoration: none; }
   .incident-title:hover { color: #7db7ff; }
   .incident-summary { color: #a8b3c7; font-size: 0.88rem; line-height: 1.55; max-width: 72ch; margin: 0 0 8px; }
+  .incident-timeline { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 5px; color: #8a96b0; font-size: 0.8rem; line-height: 1.45; }
+  .incident-timeline li { display: grid; grid-template-columns: minmax(0, 170px) 1fr; gap: 10px; align-items: baseline; }
+  .incident-time { color: #c2cbda; font-variant-numeric: tabular-nums; }
   .incident-meta { color: #6b7790; font-size: 0.8rem; display: flex; gap: 6px; flex-wrap: wrap; }
   .incident-meta a { color: #7db7ff; text-decoration: none; }
   .incident-meta a:hover { text-decoration: underline; }
@@ -1176,6 +1230,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     .sub-pop a.option { min-height: 44px; }
     .bars { height: 28px; }
     .bars-axis { font-size: 0.68rem; }
+    .incident-timeline li { grid-template-columns: 1fr; gap: 1px; }
   }
 </style>
 </head>

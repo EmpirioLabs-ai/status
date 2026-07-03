@@ -30,6 +30,10 @@ The status page shows the issue title, timing, duration, and the first
 non-metadata paragraph from the issue body. Keep that first paragraph concise
 and customer-safe; put longer timeline detail below it.
 
+If the issue body includes a `Timeline` section with bullet items, those items
+render as a compact timeline on the status page. Full incident discussion and
+Upptime-generated updates still live in the GitHub issue/comments.
+
 ## License
 
 This repository is published in public form for operational
