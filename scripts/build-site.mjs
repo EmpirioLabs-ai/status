@@ -665,6 +665,12 @@ function renderHtml({ config, sites, overall, incidents, generatedAt, modelsStat
   const modelsTilesHtml = sortedWorkerKeys
     .map((key) => {
       const w = recordedWorkers[key];
+      // Display the canonical customer model slug, not the raw worker key --
+      // the key can be the Railway service name (e.g. gemma-4-26b-a4b-native)
+      // which differs from the public slug (gemma-4-26b-a4b). data-worker
+      // stays the key so 90-day history + live JS matching are unchanged.
+      const displayName =
+        w && Array.isArray(w.models) && w.models.length ? w.models[0] : key;
       const buckets = modelBuckets(w, HISTORY_DAYS);
       const pct = uptimePercent(buckets);
       const uptimeDetail = pct == null ? "" : `${fmtPct(pct)} uptime`;
@@ -675,12 +681,12 @@ function renderHtml({ config, sites, overall, incidents, generatedAt, modelsStat
       // as "Down" or "Idle" when it's actually fine right now.
       const stateClass = "ok";
       const stateLabel = "Checking\u2026";
-      const barsHtml = renderBars(buckets, `${HISTORY_DAYS} day history for ${key}`);
+      const barsHtml = renderBars(buckets, `${HISTORY_DAYS} day history for ${displayName}`);
       return `
         <div class="worker-tile" data-worker="${escapeHtml(key)}" data-uptime-detail="${escapeHtml(uptimeDetail)}">
           <div class="worker-row ${stateClass}" data-tile-row>
             <span class="worker-dot ${stateClass}" data-tile-dot aria-hidden="true"></span>
-            <span class="worker-name">${escapeHtml(key)}</span>
+            <span class="worker-name">${escapeHtml(displayName)}</span>
             <span class="worker-state" data-tile-state>${escapeHtml(stateLabel)}</span>
             <span class="worker-detail" data-tile-detail>${escapeHtml(uptimeDetail)}</span>
           </div>
@@ -1498,7 +1504,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       return '';
     }
 
-    function createTile(name, w, st, label){
+    function createTile(name, display, w, st, label){
       // New worker (no historical bars yet) — inserted at sorted position.
       // Render an empty bars strip with the same number of slots as the
       // server-rendered tiles, each carrying its own date tooltip so hover
@@ -1528,11 +1534,11 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       el.innerHTML =
         '<div class="worker-row ' + esc(st) + '" data-tile-row title="' + esc(tileTitle(name, w)) + '">' +
           '<span class="worker-dot ' + esc(st) + '" data-tile-dot aria-hidden="true"></span>' +
-          '<span class="worker-name">' + esc(name) + '</span>' +
+          '<span class="worker-name">' + esc(display) + '</span>' +
           '<span class="worker-state" data-tile-state>' + esc(label) + '</span>' +
           '<span class="worker-detail" data-tile-detail>' + esc(tileDetail(el, st, w)) + '</span>' +
         '</div>' +
-        '<div class="bars" aria-label="' + esc(${HISTORY_DAYS} + ' day history for ' + name) + '">' + emptyBars + '</div>';
+        '<div class="bars" aria-label="' + esc(${HISTORY_DAYS} + ' day history for ' + display) + '">' + emptyBars + '</div>';
       return el;
     }
 
@@ -1579,9 +1585,11 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
         ? w.model_slugs.filter(function(s){ return typeof s === 'string' && s.length > 0; })
         : [];
       if(slugs.length <= 1){
-        return [{ key: workerKey, w: w }];
+        // key stays the worker key (service name) for tile matching + history;
+        // display shows the canonical customer slug when we have one.
+        return [{ key: workerKey, w: w, display: (slugs.length === 1 ? slugs[0] : workerKey) }];
       }
-      return slugs.map(function(slug){ return { key: slug, w: w }; });
+      return slugs.map(function(slug){ return { key: slug, w: w, display: slug }; });
     }
 
     function render(data){
@@ -1595,6 +1603,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
         var entries = fanOutWorker(workerKey, workerData);
         for(var j = 0; j < entries.length; j++){
           var name = entries[j].key;
+          var display = entries[j].display || entries[j].key;
           var w = entries[j].w;
           var st = visibleStatus(w.status);
           var label = st === 'ok' ? 'Operational' : 'Down';
@@ -1603,7 +1612,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
           if(tile){
             applyTile(tile, name, w);
           } else {
-            tile = createTile(name, w, st, label);
+            tile = createTile(name, display, w, st, label);
             insertTileSorted(tile, name);
           }
         }
