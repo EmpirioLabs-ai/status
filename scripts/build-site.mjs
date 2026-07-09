@@ -429,7 +429,6 @@ function renderBars(buckets, ariaLabel) {
           : "bar bar-none";
       const attrs = [
         `class="${cls}"`,
-        `tabindex="0"`,
         `data-d="${escapeHtml(b.date)}"`,
         `data-s="${escapeHtml(b.status)}"`,
         `data-c="${b.checks || 0}"`,
@@ -440,7 +439,7 @@ function renderBars(buckets, ariaLabel) {
       return `<span ${attrs}></span>`;
     })
     .join("");
-  return `<div class="bars" aria-label="${escapeHtml(ariaLabel)}">${inner}</div>`;
+  return `<div class="bars" tabindex="0" role="group" aria-label="${escapeHtml(ariaLabel)}">${inner}</div>`;
 }
 
 function escapeHtml(s) {
@@ -900,6 +899,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     margin-top: 4px;
     /* Allow tooltips to escape vertically */
     overflow: visible;
+    outline: none;
   }
   .bar {
     display: block;
@@ -911,31 +911,30 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
                 filter 160ms ease,
                 background-color 160ms ease;
     transform-origin: center;
-    will-change: transform;
     outline: none;
   }
-  .bar:hover, .bar:focus-visible {
+  .bar:hover, .bar:focus-visible, .bar.bar-active {
     transform: scaleY(1.18);
     filter: brightness(1.15);
     z-index: 5;
   }
   .bar-up { background: #1ed688; }
-  .bar-up:hover, .bar-up:focus-visible {
+  .bar-up:hover, .bar-up:focus-visible, .bar-up.bar-active {
     background: #36e09a;
     box-shadow: 0 0 12px rgba(30, 214, 136, 0.45);
   }
   .bar-degraded { background: #ffb547; }
-  .bar-degraded:hover, .bar-degraded:focus-visible {
+  .bar-degraded:hover, .bar-degraded:focus-visible, .bar-degraded.bar-active {
     background: #ffc266;
     box-shadow: 0 0 12px rgba(255, 181, 71, 0.45);
   }
   .bar-down { background: #ff4d6a; }
-  .bar-down:hover, .bar-down:focus-visible {
+  .bar-down:hover, .bar-down:focus-visible, .bar-down.bar-active {
     background: #ff6b85;
     box-shadow: 0 0 12px rgba(255, 77, 106, 0.5);
   }
   .bar-none { background: #14233f; }
-  .bar-none:hover, .bar-none:focus-visible {
+  .bar-none:hover, .bar-none:focus-visible, .bar-none.bar-active {
     background: #1c2e51;
   }
 
@@ -1131,6 +1130,8 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     display: flex; flex-direction: column; gap: 4px;
     padding: 10px 0;
     border-bottom: 1px solid #0e1a31;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 54px;
   }
   .worker-tile:last-child { border-bottom: 0; padding-bottom: 0; }
   .worker-tile .bars { height: 14px; margin-top: 2px; }
@@ -1434,6 +1435,8 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     var lastChecked = null;
     var ageTimer = null;
     var inFlight = false;
+    var tileByName = Object.create(null);
+    var hasTiles = false;
 
     function esc(s){
       return String(s == null ? '' : s)
@@ -1470,11 +1473,6 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       if(lastChecked && updated) updated.textContent = 'Updated ' + ageText(lastChecked);
     }
 
-    function attrSelectorEscape(s){
-      // CSS attribute selector value escaping
-      return String(s).replace(/(['"\\\\])/g, '\\\\$1');
-    }
-
     // Map gateway status → visible status. Suspended/dormant replicas are a
     // platform implementation detail (Fly scale-to-zero) and aren't an
     // availability problem from the API consumer's perspective, so they
@@ -1488,6 +1486,32 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       if(st === 'ok' && typeof w.latency_ms === 'number') return w.latency_ms + ' ms';
       if(st === 'down') return w.error || 'Unreachable';
       return '';
+    }
+
+    function tileParts(tile){
+      if(!tile.__parts){
+        tile.__parts = {
+          row: tile.querySelector('[data-tile-row]'),
+          dot: tile.querySelector('[data-tile-dot]'),
+          stateEl: tile.querySelector('[data-tile-state]'),
+          detailEl: tile.querySelector('[data-tile-detail]')
+        };
+      }
+      return tile.__parts;
+    }
+
+    function cacheTile(tile){
+      if(!tile) return;
+      var name = tile.getAttribute('data-worker') || '';
+      if(name){
+        tileByName[name] = tile;
+        hasTiles = true;
+      }
+    }
+
+    function cacheExistingTiles(){
+      var tiles = grid.querySelectorAll('.worker-tile[data-worker]');
+      for(var i = 0; i < tiles.length; i++) cacheTile(tiles[i]);
     }
 
     function tileDetail(tile, st, w){
@@ -1526,7 +1550,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
           String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
           String(d.getUTCDate()).padStart(2, '0');
         emptyBars +=
-          '<span class="bar bar-none" tabindex="0"' +
+          '<span class="bar bar-none"' +
             ' data-d="' + esc(ymd) + '"' +
             ' data-s="none"' +
             ' data-c="0" data-o="0" data-x="0" data-r="0"></span>';
@@ -1538,17 +1562,18 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
           '<span class="worker-state" data-tile-state>' + esc(label) + '</span>' +
           '<span class="worker-detail" data-tile-detail>' + esc(tileDetail(el, st, w)) + '</span>' +
         '</div>' +
-        '<div class="bars" aria-label="' + esc(${HISTORY_DAYS} + ' day history for ' + display) + '">' + emptyBars + '</div>';
+        '<div class="bars" tabindex="0" role="group" aria-label="' + esc(${HISTORY_DAYS} + ' day history for ' + display) + '">' + emptyBars + '</div>';
+      cacheTile(el);
       return el;
     }
-
     function applyTile(tile, name, w){
       var st = visibleStatus(w.status);
       var label = st === 'ok' ? 'Operational' : 'Down';
-      var row = tile.querySelector('[data-tile-row]');
-      var dot = tile.querySelector('[data-tile-dot]');
-      var stateEl = tile.querySelector('[data-tile-state]');
-      var detailEl = tile.querySelector('[data-tile-detail]');
+      var parts = tileParts(tile);
+      var row = parts.row;
+      var dot = parts.dot;
+      var stateEl = parts.stateEl;
+      var detailEl = parts.detailEl;
       if(row){
         row.classList.remove('ok','suspended','down');
         row.classList.add(st);
@@ -1568,10 +1593,12 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
         var k = existing[i].getAttribute('data-worker') || '';
         if(name.localeCompare(k) < 0){
           grid.insertBefore(tile, existing[i]);
+          cacheTile(tile);
           return;
         }
       }
       grid.appendChild(tile);
+      cacheTile(tile);
     }
 
     // Fan out a /health worker entry into one (key, w) pair per
@@ -1607,8 +1634,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
           var w = entries[j].w;
           var st = visibleStatus(w.status);
           var label = st === 'ok' ? 'Operational' : 'Down';
-          var sel = '[data-worker="' + attrSelectorEscape(name) + '"]';
-          var tile = grid.querySelector(sel);
+          var tile = tileByName[name];
           if(tile){
             applyTile(tile, name, w);
           } else {
@@ -1643,7 +1669,7 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     function showError(msg){
       // Don't wipe historical bars on a transient fetch error — only show
       // an inline notice if no tiles have been rendered at all.
-      if(!grid.querySelector('.worker-tile')){
+      if(!hasTiles){
         grid.innerHTML = '<div class="workers-error">' + esc(msg || 'Could not fetch worker status.') + '</div>';
       }
     }
@@ -1681,14 +1707,23 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     }
 
     document.addEventListener('visibilitychange', function(){
-      if(document.hidden) stop(); else start(false);
+      if(document.hidden) stop(); else start(true);
     });
 
     if(refreshBtn){
       refreshBtn.addEventListener('click', function(){ load(true); });
     }
 
-    start(true);
+    cacheExistingTiles();
+    if('requestIdleCallback' in window){
+      window.requestIdleCallback(function(){
+        if(!document.hidden) start(true);
+      }, { timeout: 1200 });
+    } else {
+      setTimeout(function(){
+        if(!document.hidden) start(true);
+      }, 0);
+    }
   })();
 
   /* Custom right-click context menu (Fern-style) */
@@ -1855,12 +1890,26 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
       tip.style.opacity = '1';
     }
 
+    var activeBar = null;
+
+    function clearActiveBar(){
+      if(activeBar) activeBar.classList.remove('bar-active');
+      activeBar = null;
+    }
+
+    function markActiveBar(bar){
+      if(activeBar && activeBar !== bar) activeBar.classList.remove('bar-active');
+      activeBar = bar;
+      if(activeBar) activeBar.classList.add('bar-active');
+    }
+
     function show(bar){
       tip.innerHTML = buildHtml(bar);
       position(bar);
     }
 
     function hide(){
+      clearActiveBar();
       tip.classList.remove('show');
       tip.style.opacity = '0';
     }
@@ -1868,6 +1917,32 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     function findBar(target){
       if(!target || !target.closest) return null;
       return target.closest('.bar');
+    }
+
+    function findStrip(target){
+      if(!target || !target.closest) return null;
+      return target.closest('.bars');
+    }
+
+    function barsIn(strip){
+      return strip ? strip.querySelectorAll('.bar') : [];
+    }
+
+    function activeIndex(strip, bars){
+      var last = Math.max(0, bars.length - 1);
+      var raw = parseInt(strip.getAttribute('data-active-index') || String(last), 10);
+      if(isNaN(raw)) raw = last;
+      return Math.max(0, Math.min(raw, last));
+    }
+
+    function showStripBar(strip, index){
+      var bars = barsIn(strip);
+      if(!bars.length) return;
+      var next = Math.max(0, Math.min(index, bars.length - 1));
+      strip.setAttribute('data-active-index', String(next));
+      var bar = bars[next];
+      markActiveBar(bar);
+      show(bar);
     }
 
     document.addEventListener('mouseover', function(e){
@@ -1883,20 +1958,40 @@ ${sw.appleTouchIcon ? `<link rel="apple-touch-icon" href="${escapeHtml(sw.appleT
     });
     document.addEventListener('focusin', function(e){
       var bar = findBar(e.target);
-      if(bar) show(bar);
+      if(bar){ show(bar); return; }
+      var strip = findStrip(e.target);
+      if(strip){
+        var bars = barsIn(strip);
+        showStripBar(strip, activeIndex(strip, bars));
+      }
     });
     document.addEventListener('focusout', function(e){
-      var bar = findBar(e.target);
-      if(bar) hide();
+      if(findBar(e.target) || findStrip(e.target)) hide();
     });
     document.addEventListener('touchstart', function(e){
       var bar = findBar(e.target);
       if(bar){ show(bar); }
       else { hide(); }
     }, { passive: true });
+    document.addEventListener('keydown', function(e){
+      var strip = findStrip(e.target);
+      if(!strip){
+        if(e.key === 'Escape') hide();
+        return;
+      }
+      var bars = barsIn(strip);
+      var idx = activeIndex(strip, bars);
+      if(e.key === 'ArrowLeft') idx -= 1;
+      else if(e.key === 'ArrowRight') idx += 1;
+      else if(e.key === 'Home') idx = 0;
+      else if(e.key === 'End') idx = bars.length - 1;
+      else if(e.key === 'Escape') { hide(); return; }
+      else return;
+      e.preventDefault();
+      showStripBar(strip, idx);
+    });
     window.addEventListener('scroll', hide, { passive: true });
     window.addEventListener('resize', hide);
-    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') hide(); });
   })();
 </script>
 </body>
