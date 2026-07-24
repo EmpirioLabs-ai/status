@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>https://status.empiriolabs.ai/</id>
+  <title>EmpirioLabs AI Status</title>
+  <link rel="self" href="https://status.empiriolabs.ai/feed.xml" />
+  <link rel="alternate" href="https://status.empiriolabs.ai/" />
+  <updated>2026-07-24T23:07:37.226Z</updated>
+  <author><name>EmpirioLabs AI</name></author>
+  <entry>
+    <id>https://github.com/EmpirioLabs-ai/status/issues/45</id>
+    <title>Major service disruption affecting website, platform, and API</title>
+    <link rel="alternate" href="https://github.com/EmpirioLabs-ai/status/issues/45" />
+    <updated>2026-05-20T02:28:00.000Z</updated>
+    <published>2026-05-19T23:03:00.000Z</published>
+    <summary>Resolved</summary>
+    <content type="text">&lt;!-- status-incident
+started_at: 2026-05-19T23:03:00Z
+resolved_at: 2026-05-20T02:28:00Z
+--&gt;
+
+A major service disruption affected website, platform, API, and model services after an upstream infrastructure provider outage.
+
+Timeline (Pacific time):
+- May 19, 2026, 4:03 PM: Website, platform, and API were reported down while the provider outage was investigated.
+- May 19, 2026, 7:28 PM: Services were reported as gradually coming back online.
+- May 20, 2026, 8:15 AM: A follow-up update confirmed services should be fully restored.
+
+This incident was backfilled from the operational updates posted at the time. The incident window uses the confirmed down report through the first recovery update, rather than the later follow-up confirmation.
+</content>
+  </entry>
+</feed>
